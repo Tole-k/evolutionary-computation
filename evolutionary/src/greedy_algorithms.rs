@@ -174,7 +174,7 @@ pub fn main() {
     let mode = args.mode;
     let algorithm = args.algorithm.as_str();
     let nodes_subset = args.num_nodes;
-    let mut data: Vec<DataPoint> = utils::load_data("data/TSPB.csv");
+    let mut data: Vec<DataPoint> = utils::load_data("../data/TSPB.csv");
     if nodes_subset != -1 {
         let nodes_subset = nodes_subset as usize;
         data = data[..nodes_subset].to_vec();
@@ -190,7 +190,7 @@ pub fn main() {
             );
             utils::save_solution(
                 metric.best_solution,
-                format!("reports/report1/{name}.csv").as_str(),
+                format!("../reports/report1/{name}.csv").as_str(),
             );
             let milisecs = now.elapsed().as_secs_f64() * 1000f64;
             println!("Elapsed: {:.6?}", milisecs);
