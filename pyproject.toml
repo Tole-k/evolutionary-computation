@@ -19,4 +19,4 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-evolutionary = { path = "evolutionary" }
+evolutionary = { path = "evolutionary", editable = true }

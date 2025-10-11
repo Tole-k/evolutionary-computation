@@ -1,9 +1,7 @@
-import os
-from typing import Any
 import streamlit as st
-import json
 import plotly.express as px
 import pandas as pd
+import evolutionary
 
 
 def load_solution() -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]]]:
@@ -12,17 +10,16 @@ def load_solution() -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]
     Returns:
         DataFrame with results, times for each algorithm, best found solution for each algorithm
     """
-    with open(os.path.join("data", "mock_data.json"), "r", encoding="utf-8") as f:
-        solution_data: list[dict[str, Any]] = json.load(f)
+    solution_data = evolutionary.main()
 
-    df = pd.DataFrame(
-        {solution["name"]: solution["results"] for solution in solution_data}
-    )
+    df = pd.DataFrame({solution.name: solution.scores for solution in solution_data})
 
-    times = {solution["name"]: solution["total_time"] for solution in solution_data}
-    best_paths = {solution["name"]: solution["best_path"] for solution in solution_data}
+    times = {solution.name: solution.total_time for solution in solution_data}
+    best_solutions = {
+        solution.name: solution.best_solution for solution in solution_data
+    }
 
-    return df, times, best_paths
+    return df, times, best_solutions
 
 
 @st.cache_resource

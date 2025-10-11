@@ -418,7 +418,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "click", specifier = ">=8.3.0" },
-    { name = "evolutionary", directory = "evolutionary" },
+    { name = "evolutionary", editable = "evolutionary" },
     { name = "jupyter", specifier = ">=1.1.1" },
     { name = "matplotlib", specifier = ">=3.10.7" },
     { name = "maturin", specifier = ">=1.9.6" },
@@ -432,8 +432,7 @@ requires-dist = [
 
 [[package]]
 name = "evolutionary"
-version = "0.1.0"
-source = { directory = "evolutionary" }
+source = { editable = "evolutionary" }
 
 [[package]]
 name = "executing"
