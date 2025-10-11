@@ -1,12 +1,12 @@
 use core::f64;
 use csv::ReaderBuilder;
+use ndarray::{Array1, Array2, Axis};
 use rand::prelude::*;
 use serde::Serialize;
-use std::cmp::Ordering;
 use std::fs::File;
 use std::io::Write;
 use std::str::FromStr;
-use ndarray::{Array1, Array2, Axis};
+use std::time::Instant;
 
 #[derive(Copy, Clone)]
 pub struct DataPoint {
@@ -18,10 +18,9 @@ pub struct DataPoint {
 
 #[derive(Serialize)]
 pub struct Metrics {
-    pub _scores: Vec<f64>,
-    pub min: f64,
-    pub max: f64,
-    pub avg: f64,
+    pub name: String,
+    pub scores: Vec<f64>,
+    pub total_time: f64,
     pub best_solution: Vec<usize>,
 }
 
@@ -54,7 +53,11 @@ pub fn load_data(path: &str) -> Vec<DataPoint> {
     records_mut
 }
 
-pub fn check_solution(solution: &Vec<usize>, data: &Vec<DataPoint>, distance_matrix: &Array2<f64>) -> f64 {
+pub fn check_solution(
+    solution: &Vec<usize>,
+    data: &Vec<DataPoint>,
+    distance_matrix: &Array2<f64>,
+) -> f64 {
     let mut total_value = 0.0;
     let first_point = data[solution[0]];
     let mut last_point = first_point;
@@ -83,13 +86,18 @@ pub fn generate_random_solution(
 pub fn benchmark_function(
     f: fn(&Vec<DataPoint>, usize, &Array2<f64>) -> Vec<usize>,
     data: &Vec<DataPoint>,
-    distance_matrix: &Array2<f64>
+    distance_matrix: &Array2<f64>,
+    name: &str,
 ) -> Metrics {
     let mut scores: Vec<f64> = vec![];
     let mut best_solution_score: f64 = f64::INFINITY;
     let mut best_solution: Vec<usize> = vec![];
+
+    let mut total_time = 0.0;
     for i in 0..data.len() {
+        let start_time = Instant::now();
         let solution = f(data, i, distance_matrix);
+        total_time += start_time.elapsed().as_secs_f64();
         let solution_score = check_solution(&solution, data, distance_matrix);
         scores.push(solution_score);
         if solution_score < best_solution_score {
@@ -97,30 +105,25 @@ pub fn benchmark_function(
             best_solution = solution;
         }
     }
-
-    let min = scores.iter().fold(f64::INFINITY, |a, &b| {
-        match PartialOrd::partial_cmp(&a, &b) {
-            None => f64::NAN,
-            Some(Ordering::Less) => a,
-            Some(_) => b,
-        }
-    });
-    let max = scores.iter().fold(-f64::INFINITY, |a, &b| {
-        match PartialOrd::partial_cmp(&a, &b) {
-            None => f64::NAN,
-            Some(Ordering::Greater) => a,
-            Some(_) => b,
-        }
-    });
-    let sum: f64 = scores.iter().sum();
-    let avg: f64 = sum / scores.len() as f64;
-
+    let name = name.to_string();
     Metrics {
-        _scores: scores,
-        min,
-        max,
-        avg,
+        name,
+        scores,
+        total_time,
         best_solution,
+    }
+}
+
+pub fn run_benchmark_suite(
+    functions: Vec<fn(&Vec<DataPoint>, usize, &Array2<f64>) -> Vec<usize>>,
+    names: Vec<&str>,
+    data: &Vec<DataPoint>,
+    distance_matrix: &Array2<f64>,
+) {
+    let mut results: Vec<Metrics> = vec![];
+    for iter_tuple in functions.iter().zip(names.iter()) {
+        let (function, name) = iter_tuple;
+        results.push(benchmark_function(*function, data, distance_matrix, name));
     }
 }
 

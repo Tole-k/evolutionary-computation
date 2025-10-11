@@ -1,9 +1,9 @@
 use clap::Parser;
 use ndarray::Array2;
 
-use std::time::Instant;
 use std::fs::File;
 use std::io::Write;
+use std::time::Instant;
 
 use crate::utils;
 use crate::utils::DataPoint;
@@ -185,21 +185,30 @@ pub fn main() {
     let benchmark_suite =
         |name: &str, f: fn(&Vec<DataPoint>, usize, &Array2<f64>) -> Vec<usize>| {
             let now = Instant::now();
-            let metric = utils::benchmark_function(f, &data, &distance_matrix);
+            let metric = utils::benchmark_function(f, &data, &distance_matrix, name);
             let milisecs = now.elapsed().as_secs_f64() * 1000f64;
-            println!(
-                "{name} (min: {}, avg: {}, max: {})",
-                &metric.min, &metric.avg, &metric.max,
-            );
+            let scores = &metric.scores;
+            let min = scores
+                .iter()
+                .min_by(|a, b| a.partial_cmp(b).unwrap())
+                .unwrap();
+            let max = scores
+                .iter()
+                .max_by(|a, b| a.partial_cmp(b).unwrap())
+                .unwrap();
+            let sum: f64 = scores.iter().sum();
+            let avg = sum / scores.len() as f64;
+            println!("{name} (min: {}, avg: {}, max: {})", min, avg, max,);
             println!("Elapsed: {:.6?}", milisecs);
             utils::save_solution(
                 &metric.best_solution,
                 format!("../reports/report1/{name}.csv").as_str(),
             );
             let json = serde_json::to_string_pretty(&metric).unwrap();
-            let mut file = File::create(format!("../metrics/{name}.json")).expect("Could not create file");
-            file.write_all(json.as_bytes()).expect("Could not save metrics");
-
+            let mut file =
+                File::create(format!("../metrics/{name}.json")).expect("Could not create file");
+            file.write_all(json.as_bytes())
+                .expect("Could not save metrics");
         };
 
     let single_run =
@@ -228,9 +237,7 @@ pub fn main() {
         let starting_point = args.starting_point;
         match algorithm {
             "random" => single_run("random", starting_point, utils::generate_random_solution),
-            "nn-to-last" => {
-                single_run("nn_to_last", starting_point, greedy_nn_to_last_point)
-            }
+            "nn-to-last" => single_run("nn_to_last", starting_point, greedy_nn_to_last_point),
             "nn-to-any" => single_run("nn_to_any", starting_point, greedy_nn_to_any_point),
             "greedy-cycle" => single_run("greedy_cycle", starting_point, greedy_cycle),
             "all" => {
