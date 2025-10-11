@@ -563,6 +563,8 @@ dependencies = [
  "flamegraph",
  "ndarray",
  "rand",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

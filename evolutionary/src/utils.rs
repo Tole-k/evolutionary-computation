@@ -1,6 +1,7 @@
 use core::f64;
 use csv::ReaderBuilder;
 use rand::prelude::*;
+use serde::Serialize;
 use std::cmp::Ordering;
 use std::fs::File;
 use std::io::Write;
@@ -15,6 +16,7 @@ pub struct DataPoint {
     pub cost: i32,
 }
 
+#[derive(Serialize)]
 pub struct Metrics {
     pub _scores: Vec<f64>,
     pub min: f64,
@@ -122,7 +124,7 @@ pub fn benchmark_function(
     }
 }
 
-pub fn save_solution(solution: Vec<usize>, path: &str) {
+pub fn save_solution(solution: &Vec<usize>, path: &str) {
     let mut data_file = File::create(path).expect("creation failed");
     for point_id in solution {
         data_file
