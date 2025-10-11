@@ -13,3 +13,8 @@ classifiers = [
 dynamic = ["version"]
 [tool.maturin]
 features = ["pyo3/extension-module"]
+include = [
+  "evolutionary/__init__.py",
+  "evolutionary/__init__.pyi",
+  "evolutionary/py.typed",
+]

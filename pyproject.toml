@@ -6,11 +6,17 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "click>=8.3.0",
+    "evolutionary",
     "jupyter>=1.1.1",
     "matplotlib>=3.10.7",
     "maturin>=1.9.6",
     "numpy>=2.3.3",
     "pandas>=2.3.3",
+    "pyo3-stubgen>=0.3.0",
+    "pyright>=1.1.406",
     "scipy>=1.16.2",
     "streamlit[charts]>=1.50.0",
 ]
+
+[tool.uv.sources]
+evolutionary = { path = "evolutionary" }

@@ -1,5 +1,6 @@
 use core::f64;
 use csv::ReaderBuilder;
+use pyo3::{pyclass, pymethods};
 use rand::prelude::*;
 use std::fs::File;
 use std::io::Write;
@@ -7,7 +8,7 @@ use std::str::FromStr;
 use ndarray::{Array1, Array2, Axis};
 use std::time::Instant;
 
-#[derive(Copy, Clone, )]
+#[derive(Copy, Clone)]
 pub struct DataPoint {
     pub id: usize,
     pub x: i32,
@@ -15,11 +16,25 @@ pub struct DataPoint {
     pub cost: i32,
 }
 
+#[pyclass]
+#[derive(Clone)]
 pub struct Metrics {
+    #[pyo3(get, set)]
     pub name: String,
+    #[pyo3(get, set)]
     pub scores: Vec<f64>,
+    #[pyo3(get, set)]
     pub total_time: f64,
+    #[pyo3(get, set)]
     pub best_solution: Vec<usize>,
+}
+
+#[pymethods]
+impl Metrics {
+    #[new]
+    fn new(name: String, scores: Vec<f64>, total_time: f64, best_solution: Vec<usize>) -> Self {
+        Self { name, scores, total_time, best_solution }
+    }
 }
 
 pub fn calculate_distance_matrix(records: &Vec<DataPoint>) -> Array2<f64> {
@@ -113,7 +128,7 @@ pub fn run_benchmark_suite(
     names: Vec<&str>,
     data: &Vec<DataPoint>,
     distance_matrix: &Array2<f64>
-) {
+) -> Vec<Metrics>{
     let mut results: Vec<Metrics> = vec![];
     for iter_tuple in functions.iter().zip(names.iter()) {
         let (function, name) = iter_tuple;
@@ -124,6 +139,10 @@ pub fn run_benchmark_suite(
 
     // file.write_all(list_as_json.as_bytes())
     //     .expect("Cannot write to the file!");
+    // if results.is_empty(){
+    //     results = vec![ Metrics {name:"test".to_string(), scores:vec![1.1], total_time:1.1, best_solution:vec![1]}]
+    // }
+    results
 }
 
 pub fn save_solution(solution: Vec<usize>, path: &str) {

@@ -1,9 +1,5 @@
 use ndarray::Array2;
-use clap::Parser;
 
-use std::time::Instant;
-
-use crate::utils;
 use crate::utils::DataPoint;
 
 fn find_closest(
@@ -155,92 +151,4 @@ pub fn greedy_cycle(
         not_visited_points.remove(index);
     }
     tsp_path
-}
-
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-struct Args {
-    /// Name of the person to greet
-    #[arg(short, long)]
-    mode: String,
-
-    /// Number of times to greet
-    #[arg(short, long)]
-    algorithm: String,
-
-    /// Index of staring point
-    #[arg(short, long, default_value_t=1)]
-    starting_point: usize,
-
-    ///number of nodes, -1 for all nodes from file
-    #[arg(short, long, default_value_t=-1)]
-    num_nodes:i32,
-}
-
-pub fn main() {
-    let args = Args::parse();
-    let mode = args.mode;
-    let algorithm = args.algorithm.as_str();
-    let nodes_subset = args.num_nodes;
-    let mut data: Vec<DataPoint> = utils::load_data("../data/TSPB.csv");
-    if nodes_subset != -1{
-        let nodes_subset = nodes_subset as usize;
-        data = data[..nodes_subset].to_vec();
-    }
-    let distance_matrix = utils::calculate_distance_matrix(&data);
-    let benchmark_suite = |name:&str,f: fn(&Vec<DataPoint>, usize, &Array2<f64>) -> Vec<usize>|
-    {
-        let now = Instant::now();
-        let metric =
-        utils::benchmark_function(f, &data, &distance_matrix, name);
-        utils::save_solution(
-            metric.best_solution,
-        format!("../reports/report1/{name}.csv").as_str(),
-        );
-        let milisecs = now.elapsed().as_secs_f64()*1000f64;
-        println!("Elapsed: {:.6?}", milisecs);
-    };
-
-    let single_run = |name:&str,starting_point: usize,f:fn(&Vec<DataPoint>, usize, &Array2<f64>) -> Vec<usize>|
-    {
-        let solution = f(&data, starting_point, &distance_matrix);
-        let solution_score = utils::check_solution(&solution, &data, &distance_matrix);
-        println!("{name} solution score: {solution_score}")
-    };
-    if mode == "benchmark"
-    {
-        match algorithm {
-            "random" => benchmark_suite("random",utils::generate_random_solution),
-            "nn-to-last-point" => benchmark_suite("nn_to_last_point",greedy_nn_to_last_point),
-            "nn-to-cycle" => benchmark_suite("nn_to_cycle", greedy_nn_to_cycle),
-            "greedy-cycle" => benchmark_suite("greedy_cycle", greedy_cycle),
-            "all" => {
-                benchmark_suite("random",utils::generate_random_solution);
-                benchmark_suite("nn_to_last_point",greedy_nn_to_last_point);
-                benchmark_suite("nn_to_cycle",greedy_nn_to_cycle);
-                benchmark_suite("greedy_cycle",greedy_cycle);
-            }
-            _ => println!("Invalid algorithm")
-        }
-    }
-    else if mode == "single_run" {
-        let starting_point = args.starting_point;
-        match algorithm {
-            "random" => single_run("random",starting_point,utils::generate_random_solution),
-            "nn-to-last-point" => single_run("nn_to_last_point",starting_point,greedy_nn_to_last_point),
-            "nn-to-cycle" => single_run("nn_to_cycle",starting_point, greedy_nn_to_cycle),
-            "greedy-cycle" => single_run("greedy_cycle",starting_point, greedy_cycle),
-            "all" => {
-                single_run("random",starting_point,utils::generate_random_solution);
-                single_run("nn_to_last_point",starting_point,greedy_nn_to_last_point);
-                single_run("nn_to_cycle",starting_point,greedy_nn_to_cycle);
-                single_run("greedy_cycle",starting_point,greedy_cycle);
-            }
-            _ => println!("Invalid algorithm")
-        }
-    }
-    else {
-        println!("Invalid mode")
-    }
-
 }
