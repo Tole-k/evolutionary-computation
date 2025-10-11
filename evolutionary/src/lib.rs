@@ -16,8 +16,8 @@ fn benchmark(benchmark_name:String) -> PyResult<i32> {
 fn main() -> Vec<utils::Metrics>{
     let data: Vec<utils::DataPoint> = utils::load_data("data/TSPA.csv");
     let distance_matrix = utils::calculate_distance_matrix(&data);
-    utils::run_benchmark_suite(vec![greedy_algorithms::greedy_nn_to_last_point, greedy_algorithms::greedy_nn_to_cycle, greedy_algorithms::greedy_cycle ],
-        vec!["nn_to_last_point", "nn_to_cycle", "greedy_cycle"], &data, &distance_matrix)
+    utils::run_benchmark_suite(vec![greedy_algorithms::greedy_nn_to_last_point, greedy_algorithms::greedy_nn_to_any_point, greedy_algorithms::greedy_cycle ],
+        vec!["nn_to_last_point", "nn_to_any_point", "greedy_cycle"], &data, &distance_matrix)
 }
 
 #[pymodule]

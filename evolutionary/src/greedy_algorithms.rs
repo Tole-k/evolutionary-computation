@@ -62,7 +62,7 @@ pub fn greedy_nn_to_last_point(
     tsp_path
 }
 
-pub fn greedy_nn_to_cycle(
+pub fn greedy_nn_to_any_point(
     data: &Vec<DataPoint>,
     starting_point_index: usize,
     distance_matrix: &Array2<f64>,
@@ -73,31 +73,31 @@ pub fn greedy_nn_to_cycle(
     not_visited_points.remove(starting_point_index);
     for _ in 1..data.len() / 2 {
         let mut insert_spot: usize = 0;
-        let (mut closest_point_id, mut closest_distance) =
-            find_closest(tsp_path[0], &not_visited_points, distance_matrix);
-        for (i, pair) in tsp_path.windows(2).enumerate() {
-            let (a, b) = (pair[0], pair[1]);
-            let distance: f64;
-            let point_id: usize;
-            (point_id, distance) =
-                find_cheapest_extension(a, b, &not_visited_points, distance_matrix);
+        let mut closest_point_id = 0;
+        let mut closest_distance = f64::INFINITY;
+        for pos in 0..tsp_path.len() + 1 {
+            let (point_id, distance);
+            if pos == 0 {
+                (point_id, distance) =
+                    find_closest(tsp_path[0], &not_visited_points, distance_matrix);
+            } else if pos == tsp_path.len() {
+                (point_id, distance) = find_closest(
+                    tsp_path[tsp_path.len() - 1],
+                    &not_visited_points,
+                    distance_matrix,
+                );
+            } else {
+                let (a, b) = (tsp_path[pos - 1], tsp_path[pos]);
+                (point_id, distance) =
+                    find_cheapest_extension(a, b, &not_visited_points, distance_matrix);
+            }
             if distance < closest_distance {
                 closest_distance = distance;
-                insert_spot = i + 1;
+                insert_spot = pos;
                 closest_point_id = point_id;
             }
         }
-        let (point_id, distance) = find_closest(
-            tsp_path[tsp_path.len() - 1],
-            &not_visited_points,
-            distance_matrix,
-        );
-        if distance < closest_distance {
-            closest_point_id = point_id;
-            tsp_path.push(closest_point_id);
-        } else {
-            tsp_path.insert(insert_spot, closest_point_id);
-        }
+        tsp_path.insert(insert_spot, closest_point_id);
         let index = not_visited_points
             .iter()
             .position(|n| n.id == closest_point_id)
@@ -120,30 +120,22 @@ pub fn greedy_cycle(
         let mut insert_spot: usize = 0;
         let mut closest_point_id = starting_point_id;
         let mut closest_distance = f64::INFINITY;
-        for (i, pair) in tsp_path.windows(2).enumerate() {
-            let (a, b) = (pair[0], pair[1]);
-            let distance: f64;
-            let point_id: usize;
-            (point_id, distance) =
+        for pos in 0..tsp_path.len() + 1 {
+            let (a, b);
+            if pos == 0 || pos == tsp_path.len() {
+                (a, b) = (tsp_path[tsp_path.len() - 1], tsp_path[0])
+            } else {
+                (a, b) = (tsp_path[pos - 1], tsp_path[pos]);
+            }
+            let (point_id, distance) =
                 find_cheapest_extension(a, b, &not_visited_points, distance_matrix);
             if distance < closest_distance {
                 closest_distance = distance;
-                insert_spot = i + 1;
+                insert_spot = pos;
                 closest_point_id = point_id;
             }
         }
-        let a = tsp_path[tsp_path.len() - 1];
-        let b = tsp_path[0];
-        let distance: f64;
-        let point_id: usize;
-        (point_id, distance) =
-            find_cheapest_extension(a, b, &not_visited_points, distance_matrix);
-        if distance < closest_distance {
-            closest_point_id = point_id;
-            tsp_path.push(closest_point_id);
-        } else {
-            tsp_path.insert(insert_spot, closest_point_id);
-        }
+        tsp_path.insert(insert_spot, closest_point_id);
         let index = not_visited_points
             .iter()
             .position(|n| n.id == closest_point_id)
