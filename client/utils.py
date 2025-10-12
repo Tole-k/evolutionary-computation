@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 import os
+from typing import Literal
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -12,8 +13,13 @@ matplotlib.rcParams["animation.embed_limit"] = 2**128
 
 
 @st.cache_data
-def load_TSP_data_A():
-    instance = pd.read_csv(os.path.join("data", "TSPA.csv"), sep=";", header=None)
+def load_TSP_data(tsp_to_load: Literal["TSP A", "TSP B"]):
+    tsp_path_map = {"TSP A": "TSPA.csv", "TSP B": "TSPB.csv"}
+
+    instance = pd.read_csv(
+        os.path.join("data", tsp_path_map[tsp_to_load]), sep=";", header=None
+    )
+
     instance.columns = ["X coordinate", "Y coordinate", "cost"]
     return instance
 

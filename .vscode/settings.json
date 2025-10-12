@@ -5,6 +5,8 @@
         "facecolor",
         "figsize",
         "frameon",
+        "TSPA",
+        "TSPB",
         "xticks",
         "yticks"
     ]
