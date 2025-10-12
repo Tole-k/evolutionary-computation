@@ -48,7 +48,7 @@ pub fn greedy_nn_to_last_point(
     let mut tsp_path: Vec<usize> = vec![last_point_id];
     let mut not_visited_points: Vec<DataPoint> = data.clone();
     not_visited_points.remove(starting_point_index);
-    for _ in 1..data.len() / 2 {
+    for _ in 1..(data.len() + 1) / 2 {
         let (closest_point_id, _) =
             find_closest(last_point_id, &not_visited_points, distance_matrix);
         tsp_path.push(closest_point_id);
@@ -71,7 +71,7 @@ pub fn greedy_nn_to_any_point(
     let mut tsp_path: Vec<usize> = vec![starting_point_id];
     let mut not_visited_points: Vec<DataPoint> = data.clone();
     not_visited_points.remove(starting_point_index);
-    for _ in 1..data.len() / 2 {
+    for _ in 1..(data.len() + 1) / 2 {
         let mut insert_spot: usize = 0;
         let mut closest_point_id = 0;
         let mut closest_distance = f64::INFINITY;
@@ -116,7 +116,7 @@ pub fn greedy_cycle(
     let mut tsp_path: Vec<usize> = vec![starting_point_id];
     let mut not_visited_points: Vec<DataPoint> = data.clone();
     not_visited_points.remove(starting_point_index);
-    for _ in 1..data.len() / 2 {
+    for _ in 1..(data.len()+1) / 2 {
         let mut insert_spot: usize = 0;
         let mut closest_point_id = starting_point_id;
         let mut closest_distance = f64::INFINITY;

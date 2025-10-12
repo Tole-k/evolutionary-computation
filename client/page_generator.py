@@ -27,20 +27,24 @@ def load_solution() -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]
 
     if not isinstance(state, str) and state not in ["TSP A", "TSP B"]:
         raise ValueError(f"Impossible TSP state reached: {state}")
-    solution_data = evolutionary.main(state.replace(" ", ""))
+    algs = [alg for alg in ["random", "nn_to_last_point", "nn_to_any_point", "greedy_cycle"] if st.session_state.get(alg)]
+    solution_data = evolutionary.main(state.replace(" ", ""), algs)
+    
+    # proof that it works
+    # print(evolutionary.complexity(state.replace(" ", ""),"greedy_cycle")) 
 
     df = pd.DataFrame({solution.name: solution.scores for solution in solution_data})
 
     times = {solution.name: solution.total_time for solution in solution_data}
-    best_solutions = {
-        solution.name: solution.best_solution for solution in solution_data
-    }
+    best_solutions = {solution.name: solution.best_solution for solution in solution_data}
 
     return df, times, best_solutions
 
 
 def algorithm_comparison_page(algorithms: list[Algorithm], name: str):
     st.title(name)
+    for alg in [alg.work_name for alg in algorithms]:
+        st.checkbox(alg,True, key=alg)
 
     df, times, best_paths = load_solution()
     col1, col2 = st.columns([1, 1])
@@ -57,14 +61,13 @@ def algorithm_comparison_page(algorithms: list[Algorithm], name: str):
     state = st.session_state.get("tsp_version")
     if state not in ["TSP A", "TSP B"]:
         raise ValueError(f"Impossible TSP state reached: {state}")
+    
 
     tsp_plotter = TSPPlotter(state)
     for algorithm, tab in zip(algorithms, tabs):
         with tab:
             st.markdown(algorithm.description)
-            animation = tsp_plotter.plot_animated(
-                best_paths[algorithm.work_name], algorithm.name
-            )
+            animation = tsp_plotter.plot_animated(best_paths[algorithm.work_name], algorithm.name)
             components.html(animation.to_jshtml(), height=500)
 
     st.divider()
