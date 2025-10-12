@@ -120,6 +120,13 @@ pub fn benchmark_function(
         }   
     }
     let name = name.to_string();
+    save_solution(best_solution.clone(),format!("{name}.txt").as_str());
+    println!("{name}");
+    let min = scores.iter().min_by(|a, b| a.partial_cmp(b).unwrap()).unwrap();
+    let max = scores.iter().max_by(|a, b| a.partial_cmp(b).unwrap()).unwrap();
+    let sum: f64 = scores.iter().sum();
+    let avg = sum / scores.len() as f64;
+    println!("min: {min}, avg: {avg}, max: {max}");
     Metrics {
         name,
         scores,
