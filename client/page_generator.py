@@ -1,7 +1,20 @@
-import streamlit as st
+from dataclasses import dataclass
+import os
+
 import plotly.express as px
 import pandas as pd
+import streamlit as st
+import streamlit.components.v1 as components
+
 import evolutionary
+from utils import TSPPlotter
+
+
+@dataclass
+class Algorithm:
+    name: str
+    work_name: str
+    description: str
 
 
 def load_solution() -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]]]:
@@ -22,19 +35,9 @@ def load_solution() -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]
     return df, times, best_solutions
 
 
-@st.cache_resource
-def get_description():
-    return {
-        "Nearest Neighbor to the last point": "description bla bla bla, description bla bla bla, description bla bla bla, description bla bla bla, description bla bla bla, description bla bla bla, description bla bla bla, description bla bla bla, description bla bla bla, description bla bla bla, description bla bla bla"
-    }
+def algorithm_comparison_page(algorithms: list[Algorithm], name: str):
+    st.title(name)
 
-
-def main():
-    st.title("Greedy algorithms")
-
-    # st.subheader("text")
-    # st.markdown("text")
-    # st.divider()
     df, times, best_paths = load_solution()
     col1, col2 = st.columns([1, 1])
     with col1:
@@ -46,17 +49,17 @@ def main():
         st.plotly_chart(fig)
 
     st.divider()
-    algorithm_full_name = st.selectbox(
-        "Choose algorithm",
-        [
-            "Nearest Neighbor to the last point",
-            "Nearest Neighbor to best point in cycle",
-            "Greedy Cycle",
-        ],
-    )
+    tabs = st.tabs([algorithm.name for algorithm in algorithms])
+    tsp_plotter = TSPPlotter(os.path.join("data", "TSPA.csv"))
+    for algorithm, tab in zip(algorithms, tabs):
+        with tab:
+            st.markdown(algorithm.description)
+            animation = tsp_plotter.plot_animated(
+                best_paths[algorithm.work_name], algorithm.name
+            )
+            components.html(animation.to_jshtml(), height=500)
 
-    st.markdown(get_description()[algorithm_full_name])
-
-
-if __name__ == "__main__":
-    main()
+    st.divider()
+    st.subheader("Conclusions")
+    # TODO: Conclusions
+    st.markdown("")

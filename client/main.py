@@ -1,5 +1,5 @@
 import streamlit as st
-from data_loader import load_TSP_data_A
+from utils import load_TSP_data_A
 
 st.title("Evolutionary Computation lab")
 st.header("Problem description")

@@ -409,6 +409,7 @@ dependencies = [
     { name = "maturin" },
     { name = "numpy" },
     { name = "pandas" },
+    { name = "pillow" },
     { name = "pyo3-stubgen" },
     { name = "pyright" },
     { name = "scipy" },
@@ -424,6 +425,7 @@ requires-dist = [
     { name = "maturin", specifier = ">=1.9.6" },
     { name = "numpy", specifier = ">=2.3.3" },
     { name = "pandas", specifier = ">=2.3.3" },
+    { name = "pillow", specifier = ">=11.3.0" },
     { name = "pyo3-stubgen", specifier = ">=0.3.0" },
     { name = "pyright", specifier = ">=1.1.406" },
     { name = "scipy", specifier = ">=1.16.2" },
@@ -432,6 +434,7 @@ requires-dist = [
 
 [[package]]
 name = "evolutionary"
+version = "0.1.0"
 source = { editable = "evolutionary" }
 
 [[package]]
