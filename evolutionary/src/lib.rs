@@ -1,8 +1,9 @@
 mod greedy_algorithms;
 mod utils;
 use pyo3::prelude::*;
+use std::collections::HashMap;
+use ndarray::Array2;
 
-/// Formats the sum of two numbers as string.
 #[pyfunction]
 fn benchmark(benchmark_name: String) -> PyResult<i32> {
     if benchmark_name == "lab1" {
@@ -12,23 +13,19 @@ fn benchmark(benchmark_name: String) -> PyResult<i32> {
     }
 }
 #[pyfunction]
-#[pyo3(signature = (dataset))]
-fn main(dataset: &str) -> Vec<utils::Metrics> {
+fn main(dataset: &str,names: Vec<String>) -> Vec<utils::Metrics> {
     let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset}.csv"));
     let distance_matrix = utils::calculate_distance_matrix(&data);
+    let names: Vec<&str> = names.iter().map(|s| &**s).collect();
+    let mut map: HashMap<&str, fn(&Vec<utils::DataPoint>, usize, &Array2<f64>) -> Vec<usize>> = HashMap::new();
+    map.insert("random", utils::generate_random_solution);
+    map.insert("nn_to_last_point",greedy_algorithms::greedy_nn_to_last_point);
+    map.insert("nn_to_any_point",greedy_algorithms::greedy_nn_to_any_point);
+    map.insert("greedy_cycle", greedy_algorithms::greedy_cycle);
+    let algorithms =Vec::from_iter(names.iter().map(|s| map[s]));
     utils::run_benchmark_suite(
-        vec![
-            utils::generate_random_solution,
-            greedy_algorithms::greedy_nn_to_last_point,
-            greedy_algorithms::greedy_nn_to_any_point,
-            greedy_algorithms::greedy_cycle,
-        ],
-        vec![
-            "random",
-            "nn_to_last_point",
-            "nn_to_any_point",
-            "greedy_cycle",
-        ],
+        algorithms,
+        names,
         &data,
         &distance_matrix,
     )
