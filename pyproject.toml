@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "click>=8.3.0",
-    "evolutionary",
+    # "evolutionary",
     "jupyter>=1.1.1",
     "matplotlib>=3.10.7",
     "maturin>=1.9.6",
@@ -19,5 +19,5 @@ dependencies = [
     "streamlit[charts]>=1.50.0",
 ]
 
-[tool.uv.sources]
-evolutionary = { path = "evolutionary", editable = true }
+# [tool.uv.sources]
+# evolutionary = { path = "evolutionary", editable = true }

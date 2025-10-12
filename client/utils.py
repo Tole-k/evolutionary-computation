@@ -25,8 +25,8 @@ def load_TSP_data(tsp_to_load: Literal["TSP A", "TSP B"]):
 
 
 class TSPPlotter:
-    def __init__(self, instance_path) -> None:
-        instance = pd.read_csv(instance_path, sep=";", header=None).T.to_numpy()
+    def __init__(self, tsp_to_load: Literal["TSP A", "TSP B"]) -> None:
+        instance = load_TSP_data(tsp_to_load).T.to_numpy()
         self.x_coords, self.y_coords, self.costs = instance
 
     def plot(self, instance: dict[str, list[int]]):

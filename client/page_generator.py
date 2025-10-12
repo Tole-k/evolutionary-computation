@@ -23,7 +23,11 @@ def load_solution() -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]
     Returns:
         DataFrame with results, times for each algorithm, best found solution for each algorithm
     """
-    solution_data = evolutionary.main()
+    state = st.session_state.get("tsp_version")
+
+    if not isinstance(state, str) and state not in ["TSP A", "TSP B"]:
+        raise ValueError(f"Impossible TSP state reached: {state}")
+    solution_data = evolutionary.main(state.replace(" ", ""))
 
     df = pd.DataFrame({solution.name: solution.scores for solution in solution_data})
 
@@ -48,9 +52,13 @@ def algorithm_comparison_page(algorithms: list[Algorithm], name: str):
         fig = px.bar(pd.DataFrame({name: [time] for name, time in times.items()}).T)
         st.plotly_chart(fig)
 
-    st.divider()
     tabs = st.tabs([algorithm.name for algorithm in algorithms])
-    tsp_plotter = TSPPlotter(os.path.join("data", "TSPA.csv"))
+
+    state = st.session_state.get("tsp_version")
+    if state not in ["TSP A", "TSP B"]:
+        raise ValueError(f"Impossible TSP state reached: {state}")
+
+    tsp_plotter = TSPPlotter(state)
     for algorithm, tab in zip(algorithms, tabs):
         with tab:
             st.markdown(algorithm.description)

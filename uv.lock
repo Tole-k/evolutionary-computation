@@ -403,7 +403,6 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "click" },
-    { name = "evolutionary" },
     { name = "jupyter" },
     { name = "matplotlib" },
     { name = "maturin" },
@@ -419,7 +418,6 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "click", specifier = ">=8.3.0" },
-    { name = "evolutionary", editable = "evolutionary" },
     { name = "jupyter", specifier = ">=1.1.1" },
     { name = "matplotlib", specifier = ">=3.10.7" },
     { name = "maturin", specifier = ">=1.9.6" },
@@ -431,11 +429,6 @@ requires-dist = [
     { name = "scipy", specifier = ">=1.16.2" },
     { name = "streamlit", extras = ["charts"], specifier = ">=1.50.0" },
 ]
-
-[[package]]
-name = "evolutionary"
-version = "0.1.0"
-source = { editable = "evolutionary" }
 
 [[package]]
 name = "executing"

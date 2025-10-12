@@ -12,6 +12,7 @@ fn benchmark(benchmark_name: String) -> PyResult<i32> {
     }
 }
 #[pyfunction]
+#[pyo3(signature = (dataset))]
 fn main(dataset: &str) -> Vec<utils::Metrics> {
     let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset}.csv"));
     let distance_matrix = utils::calculate_distance_matrix(&data);

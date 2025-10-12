@@ -5,8 +5,11 @@
         "facecolor",
         "figsize",
         "frameon",
+        "maturin",
+        "streamlit",
         "TSPA",
         "TSPB",
+        "venv",
         "xticks",
         "yticks"
     ]
