@@ -14,20 +14,16 @@ RUN python3 --version && cargo --version && rustc --version
 
 WORKDIR /app
 
-COPY pyproject.toml test.py /app/
+COPY pyproject.toml /app/
 COPY client /app/client
-COPY evolutionary /app/client
-COPY data /app/client
+COPY evolutionary /app/evolutionary
+COPY data /app/data
 
 
-RUN cd /app
 RUN python3 -m pip install uv
-RUN python3 -m uv sync
+RUN uv sync
 RUN cargo build --release --manifest-path evolutionary/Cargo.toml
-RUN python3 -m maturin develop --release --manifest-path evolutionary/Cargo.toml
-RUN python3 -m uv pip install -n ./evolutionary
-RUN python3 -m uv run streamlit run client/streamlit_app.py
+RUN uv pip install ./evolutionary
 
-EXPOSE 8080
-
-CMD [ "streamlit", "run", "client/streamlit_app.py" ]
+EXPOSE 1415
+CMD [ "uv", "run", "python", "-m", "streamlit", "run", "client/streamlit_app.py", "--server.port", "1415", "--server.address", "0.0.0.0"]
