@@ -27,7 +27,8 @@ def load_solution() -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]
 
     if not isinstance(state, str) and state not in ["TSP A", "TSP B"]:
         raise ValueError(f"Impossible TSP state reached: {state}")
-    algs = [alg for alg in ["random", "nn_to_last_point", "nn_to_any_point", "greedy_cycle"] if st.session_state.get(alg)]
+    # algs = [alg for alg in ["random", "nn_to_last_point", "nn_to_any_point", "greedy_cycle"] if st.session_state.get(alg)]
+    algs = ["random", "nn_to_last_point", "nn_to_any_point", "greedy_cycle"]
     solution_data = evolutionary.main(state.replace(" ", ""), algs)
     
     # proof that it works
@@ -43,8 +44,8 @@ def load_solution() -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]
 
 def algorithm_comparison_page(algorithms: list[Algorithm], name: str):
     st.title(name)
-    for alg in [alg.work_name for alg in algorithms]:
-        st.checkbox(alg,True, key=alg)
+    # for alg in [alg.work_name for alg in algorithms]:
+    #     st.checkbox(alg,True, key=alg)
 
     df, times, best_paths = load_solution()
     col1, col2 = st.columns([1, 1])
