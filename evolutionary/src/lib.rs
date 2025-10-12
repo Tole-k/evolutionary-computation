@@ -1,23 +1,36 @@
-mod utils;
 mod greedy_algorithms;
+mod utils;
 use pyo3::prelude::*;
 
 /// Formats the sum of two numbers as string.
 #[pyfunction]
-fn benchmark(benchmark_name:String) -> PyResult<i32> {
+fn benchmark(benchmark_name: String) -> PyResult<i32> {
     if benchmark_name == "lab1" {
         Ok(3)
     } else {
         Ok(2)
     }
 }
-
 #[pyfunction]
-fn main() -> Vec<utils::Metrics>{
-    let data: Vec<utils::DataPoint> = utils::load_data("data/TSPA.csv");
+fn main(dataset: &str) -> Vec<utils::Metrics> {
+    let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset}.csv"));
     let distance_matrix = utils::calculate_distance_matrix(&data);
-    utils::run_benchmark_suite(vec![greedy_algorithms::greedy_nn_to_last_point, greedy_algorithms::greedy_nn_to_any_point, greedy_algorithms::greedy_cycle ],
-        vec!["nn_to_last_point", "nn_to_any_point", "greedy_cycle"], &data, &distance_matrix)
+    utils::run_benchmark_suite(
+        vec![
+            utils::generate_random_solution,
+            greedy_algorithms::greedy_nn_to_last_point,
+            greedy_algorithms::greedy_nn_to_any_point,
+            greedy_algorithms::greedy_cycle,
+        ],
+        vec![
+            "random",
+            "nn_to_last_point",
+            "nn_to_any_point",
+            "greedy_cycle",
+        ],
+        &data,
+        &distance_matrix,
+    )
 }
 
 #[pymodule]
