@@ -2,7 +2,7 @@ from page_generator import algorithm_comparison_page, Algorithm
 
 NN_TO_LAST_POINT_PSEUDOCODE = """
 ```
-not_chosen_points = all_points.copy()
+not_chosen_points = []
 chosen_points = []
 chosen_points.add(starting_point)
 while chosen_points.length() < all_points.length() // 2:
@@ -41,4 +41,4 @@ ALGORITHMS = [
 
 
 if __name__ == "__main__":
-    algorithm_comparison_page(ALGORITHMS, "Greedy algorithms")
+    algorithm_comparison_page(ALGORITHMS, "Greedy algorithms", conclusions=CONCLUSIONS)
