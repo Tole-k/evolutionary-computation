@@ -29,6 +29,9 @@ def load_solution() -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]
         raise ValueError(f"Impossible TSP state reached: {state}")
     algs = [alg for alg in ["random", "nn_to_last_point", "nn_to_any_point", "greedy_cycle"] if st.session_state.get(alg)]
     solution_data = evolutionary.main(state.replace(" ", ""), algs)
+    
+    # proof that it works
+    # print(evolutionary.complexity(state.replace(" ", ""),"greedy_cycle")) 
 
     df = pd.DataFrame({solution.name: solution.scores for solution in solution_data})
 
