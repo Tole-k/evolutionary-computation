@@ -64,8 +64,6 @@ def algorithm_comparison_page(
     algorithms: list[Algorithm], name: str, conclusions: str | None = None
 ):
     st.title(name)
-    # for alg in [alg.work_name for alg in algorithms]:
-    #     st.checkbox(alg,True, key=alg)
 
     df, times, best_paths = load_solution()
     col1, col2 = st.columns([1, 1])
