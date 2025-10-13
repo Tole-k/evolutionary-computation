@@ -10,7 +10,7 @@ fn find_closest(
     let mut closest_distance: f64 = f64::INFINITY;
     let mut closest_point_id: usize = point_id;
     for candidate_point in data {
-        let current_distance = distance_matrix[[point_id, candidate_point.id]] + data[point_id].cost as f64;
+        let current_distance = distance_matrix[[point_id, candidate_point.id]] + candidate_point.cost as f64;
         if current_distance < closest_distance {
             closest_point_id = candidate_point.id;
             closest_distance = current_distance;
