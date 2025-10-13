@@ -53,11 +53,14 @@ def algorithm_comparison_page(
     df, times, best_paths = load_solution()
     col1, col2 = st.columns([1, 1])
     with col1:
-        fig = px.box(df)
+        fig = px.box(df, labels={"variable": "", "value": "Cycle Cost"})
         st.plotly_chart(fig)
 
     with col2:
-        fig = px.bar(pd.DataFrame({name: [time] for name, time in times.items()}).T)
+        fig = px.bar(
+            pd.DataFrame({name: [time] for name, time in times.items()}).T,
+            labels={"index": "", "value": "Processing time [s] (200 runs)"},
+        )
         st.plotly_chart(fig)
 
     tabs = st.tabs([algorithm.name for algorithm in algorithms])
@@ -69,6 +72,8 @@ def algorithm_comparison_page(
     tsp_plotter = TSPPlotter(state)
     for algorithm, tab in zip(algorithms, tabs):
         with tab:
+            st.subheader("Pseudocode")
+            st.markdown(algorithm.pseudocode)
             animation = tsp_plotter.plot_animated(
                 best_paths[algorithm.work_name], algorithm.name
             )
@@ -80,6 +85,16 @@ def algorithm_comparison_page(
     if conclusions is not None:
         st.subheader("Conclusions")
         st.markdown(conclusions)
+
+    data = {
+        "size": list(range(2, 201)),
+    }
+    for algorithm in algorithms:
+        data[algorithm.work_name] = evolutionary.complexity(
+            state.replace(" ", ""), algorithm.work_name
+        )
+    df = pd.DataFrame(data)
+    st.line_chart(df, x="size", y=[algorithm.work_name for algorithm in algorithms])
 
     st.subheader("Appendix")
     tabs = st.tabs([algorithm.name for algorithm in algorithms])
