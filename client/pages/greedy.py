@@ -146,6 +146,15 @@ greedy_cycle(points, starting_point, distance_matrix):
     return tsp_path
 ```"""
 
+RANDOM_PSEUDOCODE = r"""
+```
+random (points)
+    all_points = points
+    all_points = shuffle (all_points)
+    return all_points[:len(points)+1//2]
+```
+"""
+
 CONCLUSIONS = r"""
 - **Random algorithm** = the fastest, but gives terrible results.
 - **NN to last point** = looks like typical greedy algorithm, visible not optimal, multiple crosses, but much better than random with ridiculously short time.
@@ -155,7 +164,7 @@ CONCLUSIONS = r"""
 
 
 ALGORITHMS = [
-    Algorithm("Random", "random", ""),
+    Algorithm("Random", "random", RANDOM_PSEUDOCODE),
     Algorithm("NN to last point", "nn_to_last_point", NN_TO_LAST_POINT_PSEUDOCODE),
     Algorithm("NN to any point", "nn_to_any_point", NN_TO_ANY_POINT_PSEUDOCODE),
     Algorithm("Greedy Cycle", "greedy_cycle", GREEDY_CYCLE_PSEUDOCODE),

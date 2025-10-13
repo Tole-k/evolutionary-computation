@@ -69,7 +69,7 @@ for algorithm in algorithms:
         animation = tsp_plotter.plot_animated(
             best_paths[algorithm.work_name], algorithm.name
         )
-        components.html(animation.to_jshtml(), height=500)
+        components.html(animation.to_jshtml(default_mode="once"), height=500)
     st.subheader("Pseudocode")
     st.markdown(algorithm.pseudocode)
 
@@ -87,7 +87,7 @@ for algorithm in algorithms:
         st.header(state)
         df, times, best_paths = load_solution(state)
         st.write("Best found path")
-        st.write(best_paths[algorithm.work_name])
+        st.write(str(best_paths[algorithm.work_name]))
         st.write(f"Min value of algorithm is: {df[algorithm.work_name].min()}")
         st.write(f"Average value of algorithm is: {df[algorithm.work_name].mean()}")
         st.write(f"Max value of algorithm is: {df[algorithm.work_name].max()}")

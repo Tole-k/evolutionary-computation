@@ -9,12 +9,12 @@ import evolutionary
 from utils import TSPPlotter, cache_to_disk
 
 
-@st.cache_resource
 def plot_animation(tsp_plotter, best_paths, algorithm):
-    return tsp_plotter.plot_animated(best_paths[algorithm.work_name], algorithm.name)
+    return tsp_plotter.plot_animated(
+        best_paths[algorithm.work_name], algorithm.name
+    ).to_jshtml(default_mode="once")
 
 
-@st.cache_resource
 def plot_complexity(algorithms, state):
     data = {
         "size": list(range(2, 201)),
@@ -96,7 +96,7 @@ def algorithm_comparison_page(
                 best_paths,
                 algorithm,
             )
-            components.html(animation.to_jshtml(), height=500)
+            components.html(animation, height=500)
             if len(algorithm.pseudocode) < 5:
                 continue
             st.subheader("Pseudocode")

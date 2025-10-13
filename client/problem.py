@@ -12,6 +12,10 @@ Our goal is to visit half (rounded up) nodes, and go back to the start is such w
 
 def main(load_data: bool = True):
     st.title("Evolutionary Computation lab")
+    if not load_data:
+        st.write("Dawid Siera id:156044")
+        st.write("Anatol Kaczmarek id:156038")
+
     st.header("Problem description")
     st.markdown(DESCRIPTION)
 
