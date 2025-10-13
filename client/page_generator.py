@@ -77,3 +77,11 @@ def algorithm_comparison_page(algorithms: list[Algorithm], name: str, conclusion
         st.subheader("Conclusions")
         # TODO: Conclusions
         st.markdown(conclusions)
+    
+    data = {
+        "size": list(range(2, 201)),
+    }
+    for algorithm in algorithms:
+        data[algorithm.work_name] = evolutionary.complexity(state.replace(" ", ""), algorithm.work_name)
+    df = pd.DataFrame(data)
+    st.line_chart(df, x="size", y=[algorithm.work_name for algorithm in algorithms])
