@@ -1,0 +1,7 @@
+services:
+  app:
+    image: tsp_streamlit
+    build: .
+    ports:
+      - "1415:1415"
+    restart: unless-stopped

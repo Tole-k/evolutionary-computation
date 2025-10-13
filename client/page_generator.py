@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-import os
 
 import plotly.express as px
 import pandas as pd
@@ -14,7 +13,7 @@ from utils import TSPPlotter
 class Algorithm:
     name: str
     work_name: str
-    description: str
+    pseudocode: str
 
 
 def load_solution() -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]]]:
@@ -30,19 +29,23 @@ def load_solution() -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]
     # algs = [alg for alg in ["random", "nn_to_last_point", "nn_to_any_point", "greedy_cycle"] if st.session_state.get(alg)]
     algs = ["random", "nn_to_last_point", "nn_to_any_point", "greedy_cycle"]
     solution_data = evolutionary.main(state.replace(" ", ""), algs)
-    
+
     # proof that it works
-    # print(evolutionary.complexity(state.replace(" ", ""),"greedy_cycle")) 
+    # print(evolutionary.complexity(state.replace(" ", ""),"greedy_cycle"))
 
     df = pd.DataFrame({solution.name: solution.scores for solution in solution_data})
 
     times = {solution.name: solution.total_time for solution in solution_data}
-    best_solutions = {solution.name: solution.best_solution for solution in solution_data}
+    best_solutions = {
+        solution.name: solution.best_solution for solution in solution_data
+    }
 
     return df, times, best_solutions
 
 
-def algorithm_comparison_page(algorithms: list[Algorithm], name: str):
+def algorithm_comparison_page(
+    algorithms: list[Algorithm], name: str, conclusions: str | None = None
+):
     st.title(name)
     # for alg in [alg.work_name for alg in algorithms]:
     #     st.checkbox(alg,True, key=alg)
@@ -62,16 +65,19 @@ def algorithm_comparison_page(algorithms: list[Algorithm], name: str):
     state = st.session_state.get("tsp_version")
     if state not in ["TSP A", "TSP B"]:
         raise ValueError(f"Impossible TSP state reached: {state}")
-    
 
     tsp_plotter = TSPPlotter(state)
     for algorithm, tab in zip(algorithms, tabs):
         with tab:
-            st.markdown(algorithm.description)
-            animation = tsp_plotter.plot_animated(best_paths[algorithm.work_name], algorithm.name)
+            st.subheader("Pseudocode")
+            st.markdown(algorithm.pseudocode)
+            animation = tsp_plotter.plot_animated(
+                best_paths[algorithm.work_name], algorithm.name
+            )
             components.html(animation.to_jshtml(), height=500)
 
     st.divider()
-    st.subheader("Conclusions")
-    # TODO: Conclusions
-    st.markdown("")
+    if conclusions is not None:
+        st.subheader("Conclusions")
+        # TODO: Conclusions
+        st.markdown(conclusions)
