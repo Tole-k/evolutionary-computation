@@ -79,7 +79,9 @@ class TSPPlotter:
             edgecolors="#83C9FF",
         )
 
-    def plot_animated(self, solution: list[int], solution_name: str) -> FuncAnimation:
+    def plot_animated(
+        self, solution: list[int], solution_name: str, get_fig: bool = False
+    ) -> FuncAnimation:
         streamlit_color = "#0E1117"
         nice_whitey = "#FFDDFF"
         fig = plt.figure(
@@ -117,5 +119,8 @@ class TSPPlotter:
             new_solution.append(solution[i - len(solution) + 1])
 
         animation = FuncAnimation(fig, update, len(solution))
+
+        if get_fig:
+            return fig
 
         return animation

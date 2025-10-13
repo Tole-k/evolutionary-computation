@@ -69,15 +69,22 @@ def algorithm_comparison_page(
     tsp_plotter = TSPPlotter(state)
     for algorithm, tab in zip(algorithms, tabs):
         with tab:
-            st.subheader("Pseudocode")
-            st.markdown(algorithm.pseudocode)
             animation = tsp_plotter.plot_animated(
                 best_paths[algorithm.work_name], algorithm.name
             )
             components.html(animation.to_jshtml(), height=500)
+            st.subheader("Pseudocode")
+            st.markdown(algorithm.pseudocode)
 
     st.divider()
     if conclusions is not None:
         st.subheader("Conclusions")
-        # TODO: Conclusions
         st.markdown(conclusions)
+
+    st.subheader("Appendix")
+    tabs = st.tabs([algorithm.name for algorithm in algorithms])
+    for algorithm, tab in zip(algorithms, tabs):
+        with tab:
+            st.write("Best found path")
+            st.write(best_paths[algorithm.work_name])
+            st.write(f"Average value of algorithm is: {df[algorithm.work_name].mean()}")
