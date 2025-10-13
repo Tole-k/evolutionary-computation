@@ -1,4 +1,5 @@
-from page_generator import algorithm_comparison_page, Algorithm
+from components import algorithm_comparison_page
+from utils import Algorithm
 
 NN_TO_LAST_POINT_PSEUDOCODE = r"""```
 find_closest(point, points, distance_matrix):

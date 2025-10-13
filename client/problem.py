@@ -10,16 +10,16 @@ Our goal is to visit half (rounded up) nodes, and go back to the start is such w
 """
 
 
-def main(load_data: bool = True):
+def main(report: bool = False):
     st.title("Evolutionary Computation lab")
-    if not load_data:
+    if report:
         st.write("Dawid Siera id:156044")
         st.write("Anatol Kaczmarek id:156038")
 
     st.header("Problem description")
     st.markdown(DESCRIPTION)
 
-    if load_data:
+    if not report:
         st.header("Data")
         state = st.session_state.get("tsp_version")
 
