@@ -10,7 +10,7 @@ fn find_closest(
     let mut closest_distance: f64 = f64::INFINITY;
     let mut closest_point_id: usize = point_id;
     for candidate_point in data {
-        let current_distance = distance_matrix[[point_id, candidate_point.id]];
+        let current_distance = distance_matrix[[point_id, candidate_point.id]] + candidate_point.cost as f64;
         if current_distance < closest_distance {
             closest_point_id = candidate_point.id;
             closest_distance = current_distance;
@@ -30,7 +30,8 @@ fn find_cheapest_extension(
     for candidate_point in data {
         let current_distance = distance_matrix[[point_a_id, candidate_point.id]]
             + distance_matrix[[candidate_point.id, point_b_id]]
-            - distance_matrix[[point_a_id, point_b_id]];
+            - distance_matrix[[point_a_id, point_b_id]]
+            + candidate_point.cost as f64;
         if current_distance < closest_distance {
             closest_point = candidate_point.id;
             closest_distance = current_distance;
@@ -48,7 +49,7 @@ pub fn greedy_nn_to_last_point(
     let mut tsp_path: Vec<usize> = vec![last_point_id];
     let mut not_visited_points: Vec<DataPoint> = data.clone();
     not_visited_points.remove(starting_point_index);
-    for _ in 1..data.len() / 2 {
+    for _ in 1..(data.len() + 1) / 2 {
         let (closest_point_id, _) =
             find_closest(last_point_id, &not_visited_points, distance_matrix);
         tsp_path.push(closest_point_id);
@@ -71,7 +72,7 @@ pub fn greedy_nn_to_any_point(
     let mut tsp_path: Vec<usize> = vec![starting_point_id];
     let mut not_visited_points: Vec<DataPoint> = data.clone();
     not_visited_points.remove(starting_point_index);
-    for _ in 1..data.len() / 2 {
+    for _ in 1..(data.len() + 1) / 2 {
         let mut insert_spot: usize = 0;
         let mut closest_point_id = 0;
         let mut closest_distance = f64::INFINITY;
@@ -116,7 +117,7 @@ pub fn greedy_cycle(
     let mut tsp_path: Vec<usize> = vec![starting_point_id];
     let mut not_visited_points: Vec<DataPoint> = data.clone();
     not_visited_points.remove(starting_point_index);
-    for _ in 1..data.len() / 2 {
+    for _ in 1..(data.len()+1) / 2 {
         let mut insert_spot: usize = 0;
         let mut closest_point_id = starting_point_id;
         let mut closest_distance = f64::INFINITY;
