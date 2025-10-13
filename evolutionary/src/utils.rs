@@ -77,9 +77,10 @@ pub fn check_solution(
     for index in 1..solution.len() {
         let current_point = data[solution[index]];
         total_value += distance_matrix[[last_point.id, current_point.id]];
+        total_value += current_point.cost as f64;
         last_point = current_point;
     }
-    total_value += distance_matrix[[last_point.id, first_point.id]];
+    total_value += distance_matrix[[last_point.id, first_point.id]] + first_point.cost as f64;
     total_value
 }
 
