@@ -8,8 +8,23 @@ from matplotlib.animation import FuncAnimation
 
 import streamlit as st
 import pandas as pd
+import dill
 
 matplotlib.rcParams["animation.embed_limit"] = 2**128
+
+
+def cache_to_disk(func, cache_filename, *args, **kwargs):
+    path = os.path.join(".custom_cache", cache_filename)
+    if os.path.exists(path):
+        with open(path, "rb") as f:
+            result = dill.load(f)
+            print("loading")
+    else:
+        result = func(*args, **kwargs)
+        with open(path, "wb") as f:
+            dill.dump(result, f)
+            print("dumping")
+    return result
 
 
 @st.cache_data

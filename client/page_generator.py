@@ -6,7 +6,24 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 import evolutionary
-from utils import TSPPlotter
+from utils import TSPPlotter, cache_to_disk
+
+
+@st.cache_resource
+def plot_animation(tsp_plotter, best_paths, algorithm):
+    return tsp_plotter.plot_animated(best_paths[algorithm.work_name], algorithm.name)
+
+
+@st.cache_resource
+def plot_complexity(algorithms, state):
+    data = {
+        "size": list(range(2, 201)),
+    }
+    for algorithm in algorithms:
+        data[algorithm.work_name] = evolutionary.complexity(
+            state.replace(" ", ""), algorithm.work_name
+        )
+    return pd.DataFrame(data)
 
 
 @dataclass
@@ -72,10 +89,12 @@ def algorithm_comparison_page(
     tsp_plotter = TSPPlotter(state)
     for algorithm, tab in zip(algorithms, tabs):
         with tab:
-            st.subheader("Pseudocode")
-            st.markdown(algorithm.pseudocode)
-            animation = tsp_plotter.plot_animated(
-                best_paths[algorithm.work_name], algorithm.name
+            animation = cache_to_disk(
+                plot_animation,
+                f"animation-{algorithm.name}-{state}",
+                tsp_plotter,
+                best_paths,
+                algorithm,
             )
             components.html(animation.to_jshtml(), height=500)
             st.subheader("Pseudocode")
@@ -86,14 +105,7 @@ def algorithm_comparison_page(
         st.subheader("Conclusions")
         st.markdown(conclusions)
 
-    data = {
-        "size": list(range(2, 201)),
-    }
-    for algorithm in algorithms:
-        data[algorithm.work_name] = evolutionary.complexity(
-            state.replace(" ", ""), algorithm.work_name
-        )
-    df = pd.DataFrame(data)
+    df = cache_to_disk(plot_complexity, "complexity", algorithms, state)
     st.line_chart(df, x="size", y=[algorithm.work_name for algorithm in algorithms])
 
     st.subheader("Appendix")
