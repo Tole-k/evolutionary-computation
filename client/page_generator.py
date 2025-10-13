@@ -97,6 +97,8 @@ def algorithm_comparison_page(
                 algorithm,
             )
             components.html(animation.to_jshtml(), height=500)
+            if len(algorithm.pseudocode) < 5:
+                continue
             st.subheader("Pseudocode")
             st.markdown(algorithm.pseudocode)
 
@@ -105,8 +107,10 @@ def algorithm_comparison_page(
         st.subheader("Conclusions")
         st.markdown(conclusions)
 
-    df = cache_to_disk(plot_complexity, "complexity", algorithms, state)
-    st.line_chart(df, x="size", y=[algorithm.work_name for algorithm in algorithms])
+    time_df = cache_to_disk(plot_complexity, "complexity", algorithms, state)
+    st.line_chart(
+        time_df, x="size", y=[algorithm.work_name for algorithm in algorithms]
+    )
 
     st.subheader("Appendix")
     tabs = st.tabs([algorithm.name for algorithm in algorithms])
