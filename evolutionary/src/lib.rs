@@ -46,14 +46,10 @@ fn complexity(dataset: &str, name: &str) -> Vec<f64> {
     let map = get_map();
     for i in 2..201 {
         let subset = data[0..i].to_vec();
-        let mut total_time = 0.0;
-        for i in 0..subset.len() {
-            let f = map[name];
-            let start_time = Instant::now();
-            f(&subset, i, &distance_matrix);
-            total_time += start_time.elapsed().as_secs_f64();
-        }
-        times.push(total_time);
+        let f = map[name];
+        let start_time = Instant::now();
+        f(&subset, 0, &distance_matrix);
+        times.push(start_time.elapsed().as_secs_f64());
     }
     times
 }
