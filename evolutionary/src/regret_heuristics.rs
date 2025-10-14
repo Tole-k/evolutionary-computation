@@ -49,7 +49,7 @@ fn greedy_cycle_2_regret_pass(
     let second = priority_queue.pop().unwrap();
     (first.0.position,first.0.cost,second.0.cost-first.0.cost)
 }
-pub fn greedy_nn_to_any_2_regret_pass(
+fn nn_to_any_2_regret_pass(
     path:&Vec<usize>,
     candidate:&DataPoint,
     distance_matrix: &Array2<f64>,
@@ -76,7 +76,7 @@ pub fn greedy_nn_to_any_2_regret_pass(
     (first.0.position,first.0.cost,second.0.cost-first.0.cost)
 }
 
-pub fn weighted_regret_heuristic(
+fn weighted_regret_heuristic(
     data: &Vec<DataPoint>,
     starting_point_index: usize,
     distance_matrix: &Array2<f64>,
@@ -108,4 +108,18 @@ pub fn weighted_regret_heuristic(
         not_visited_points.remove(index);
     }
     tsp_path
+}
+
+pub fn nn_to_any_2_regret(data: &Vec<DataPoint>,starting_point_index: usize,distance_matrix: &Array2<f64>)->Vec<usize>{
+    weighted_regret_heuristic(data, starting_point_index, distance_matrix, nn_to_any_2_regret_pass, [0.0,1.0])
+}
+pub fn nn_to_any_weighted_2_regret(data: &Vec<DataPoint>,starting_point_index: usize,distance_matrix: &Array2<f64>)->Vec<usize>{
+    weighted_regret_heuristic(data, starting_point_index, distance_matrix, nn_to_any_2_regret_pass, [0.5,0.5])
+}
+
+pub fn greedy_cycle_2_regret(data: &Vec<DataPoint>,starting_point_index: usize,distance_matrix: &Array2<f64>)->Vec<usize>{
+    weighted_regret_heuristic(data, starting_point_index, distance_matrix, greedy_cycle_2_regret_pass, [0.0,1.0])
+}
+pub fn greedy_cycle_weighted_2_regret(data: &Vec<DataPoint>,starting_point_index: usize,distance_matrix: &Array2<f64>)->Vec<usize>{
+    weighted_regret_heuristic(data, starting_point_index, distance_matrix, greedy_cycle_2_regret_pass, [0.5,0.5])
 }
