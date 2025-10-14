@@ -91,7 +91,7 @@ fn weighted_regret_heuristic(
         let mut insert_spot: usize = 0;
         let mut best_point_id = starting_point_id;
         let mut min_cost = f64::INFINITY;
-        for candidate_point in data {
+        for candidate_point in &not_visited_points {
             let (pos,cost,regret) = regret_pass(&tsp_path, candidate_point, distance_matrix);
             let cost = cost * weights[0] - regret*weights[1];
             if cost < min_cost{
