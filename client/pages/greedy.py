@@ -6,7 +6,7 @@ find_closest(point, points, distance_matrix):
     closest_point = point
 
     for each candidate_point in points:
-        current_distance = distance_matrix[point, candidate_point]
+        current_distance = distance_matrix[point, candidate_point] + candidate_point.cost
 
         if current_distance < closest_distance:
             closest_distance = current_distance
@@ -39,7 +39,7 @@ find_closest(point, points, distance_matrix):
     closest_point = point
 
     for each candidate_point in points:
-        current_distance = distance_matrix[point, candidate_point]
+        current_distance = distance_matrix[point, candidate_point] + candidate_point.cost
 
         if current_distance < closest_distance:
             closest_distance = current_distance
@@ -57,7 +57,8 @@ find_cheapest_extension(point_a, point_b, points, distance_matrix):
         current_distance =
             distance_matrix[point_a, candidate_point] +
             distance_matrix[candidate_point, point_b] -
-            distance_matrix[point_a, point_b]
+            distance_matrix[point_a, point_b] +
+            candidate_point.cost
 
         if current_distance < closest_distance:
             closest_distance = current_distance
@@ -110,7 +111,8 @@ find_cheapest_extension(point_a, point_b, points, distance_matrix):
         current_distance =
             distance_matrix[point_a, candidate_point] +
             distance_matrix[candidate_point, point_b] -
-            distance_matrix[point_a, point_b]
+            distance_matrix[point_a, point_b] +
+            candidate_point.cost
 
         if current_distance < closest_distance:
             closest_distance = current_distance

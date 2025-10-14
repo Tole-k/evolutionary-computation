@@ -42,12 +42,11 @@ pub fn calculate_distance_matrix(records: &Vec<DataPoint>) -> Array2<f64> {
     let records = Array1::from_vec(records.clone());
     let x = records.map(|s| s.x as f64);
     let y = records.map(|s| s.y as f64);
-    let cost = records.map(|s| s.cost as f64);
     let a_x = &x.clone().insert_axis(Axis(1));
     let b_x = &x.insert_axis(Axis(0));
     let a_y = &y.clone().insert_axis(Axis(1));
     let b_y = &y.insert_axis(Axis(0));
-    (((a_x - b_x).pow2() + (a_y - b_y).pow2()).sqrt()).round() + cost
+    (((a_x - b_x).pow2() + (a_y - b_y).pow2()).sqrt()).round()
 }
 
 pub fn load_data(path: &str) -> Vec<DataPoint> {
@@ -78,9 +77,10 @@ pub fn check_solution(
     for index in 1..solution.len() {
         let current_point = data[solution[index]];
         total_value += distance_matrix[[last_point.id, current_point.id]];
+        total_value += current_point.cost as f64;
         last_point = current_point;
     }
-    total_value += distance_matrix[[last_point.id, first_point.id]];
+    total_value += distance_matrix[[last_point.id, first_point.id]] + first_point.cost as f64;
     total_value
 }
 
