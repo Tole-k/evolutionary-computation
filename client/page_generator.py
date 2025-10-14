@@ -16,7 +16,7 @@ class Algorithm:
     pseudocode: str
 
 
-def load_solution() -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]]]:
+def load_solution(algs: list[Algorithm]) -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]]]:
     """Loads solutions from the json
 
     Returns:
@@ -26,12 +26,7 @@ def load_solution() -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]
 
     if not isinstance(state, str) and state not in ["TSP A", "TSP B"]:
         raise ValueError(f"Impossible TSP state reached: {state}")
-    # algs = [alg for alg in ["random", "nn_to_last_point", "nn_to_any_point", "greedy_cycle"] if st.session_state.get(alg)]
-    algs = ["random", "nn_to_last_point", "nn_to_any_point", "greedy_cycle"]
-    solution_data = evolutionary.main(state.replace(" ", ""), algs)
-
-    # proof that it works
-    # print(evolutionary.complexity(state.replace(" ", ""),"greedy_cycle"))
+    solution_data = evolutionary.main(state.replace(" ", ""), [alg.work_name for alg in algs])
 
     df = pd.DataFrame({solution.name: solution.scores for solution in solution_data})
 
@@ -46,7 +41,7 @@ def algorithm_comparison_page(algorithms: list[Algorithm], name: str, conclusion
     # for alg in [alg.work_name for alg in algorithms]:
     #     st.checkbox(alg,True, key=alg)
 
-    df, times, best_paths = load_solution()
+    df, times, best_paths = load_solution(algorithms)
     col1, col2 = st.columns([1, 1])
     with col1:
         fig = px.box(df, labels={"variable": "", "value": "Cycle Cost"})
