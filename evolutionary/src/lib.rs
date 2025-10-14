@@ -1,4 +1,5 @@
 mod greedy_algorithms;
+mod regret_heuristics;
 mod utils;
 use ndarray::Array2;
 use pyo3::prelude::*;
