@@ -1,7 +1,7 @@
 use ndarray::Array2;
 
 use crate::utils::DataPoint;
-use std::{cmp::Ordering, collections::BinaryHeap, cmp::Reverse;};
+use std::{cmp::Ordering, collections::BinaryHeap, cmp::Reverse};
 
 struct Insertion {
     cost: f64,
