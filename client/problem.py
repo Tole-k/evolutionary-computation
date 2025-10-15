@@ -15,6 +15,9 @@ def main(report: bool = False):
     if report:
         st.write("Dawid Siera id:156044")
         st.write("Anatol Kaczmarek id:156038")
+        st.write(
+            "Source code is available on https://github.com/tole-k/evolutionary-computation.git"
+        )
 
     st.header("Problem description")
     st.markdown(DESCRIPTION)
