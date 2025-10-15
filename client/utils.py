@@ -1,15 +1,63 @@
-from collections.abc import Iterable
+from collections.abc import Callable
+from dataclasses import dataclass
+from functools import wraps
 import os
 from typing import Literal
-
-import matplotlib
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+import hashlib
+import base64
 
 import streamlit as st
 import pandas as pd
+import dill
 
-matplotlib.rcParams["animation.embed_limit"] = 2**128
+
+@dataclass
+class Algorithm:
+    name: str
+    work_name: str
+    pseudocode: str
+
+
+def short_hash(s: str, length=10) -> str:
+    h = hashlib.blake2b(s.encode(), digest_size=8).digest()
+    return base64.urlsafe_b64encode(h).decode("ascii")[:length]
+
+
+def cache_to_disk[**P, R](
+    func: Callable[P, R],
+    cache_filename: str,
+    args: tuple | None = None,
+    kwargs: dict | None = None,
+) -> R:
+    if args is None:
+        args = tuple()
+    if kwargs is None:
+        kwargs = dict()
+    cache_filename = short_hash(cache_filename) + ".dill"
+    path = os.path.join(".custom_cache", cache_filename)
+    if not os.path.exists(".custom_cache"):
+        os.makedirs(".custom_cache")
+    if os.path.exists(path):
+        with open(path, "rb") as f:
+            result = dill.load(f)
+            print("loading")
+    else:
+        result = func(*args, **kwargs)
+        with open(path, "wb") as f:
+            dill.dump(result, f)
+            print("dumping")
+    return result
+
+
+def dill_cache(filename: str):
+    def _outer[**P, R](func: Callable[P, R]) -> Callable[P, R]:
+        @wraps(func)
+        def _inner_func(*args, **kwargs):
+            return cache_to_disk(func, filename, args, kwargs)
+
+        return _inner_func
+
+    return _outer
 
 
 @st.cache_data
@@ -22,100 +70,3 @@ def load_TSP_data(tsp_to_load: Literal["TSP A", "TSP B"]):
 
     instance.columns = ["X coordinate", "Y coordinate", "cost"]
     return instance
-
-
-class TSPPlotter:
-    def __init__(self, tsp_to_load: Literal["TSP A", "TSP B"]) -> None:
-        instance = load_TSP_data(tsp_to_load).T.to_numpy()
-        self.x_coords, self.y_coords, self.costs = instance
-
-    def plot(self, instance: dict[str, list[int]]):
-        return self._plot(instance)
-
-    def plot_from_file(self, solution_path: str):
-        if os.path.isfile(solution_path):
-            solutions = {solution_path.removesuffix(".txt"): solution_path}
-        else:
-            solutions = {
-                file_name.removesuffix(".txt"): os.path.join(solution_path, file_name)
-                for file_name in os.listdir(solution_path)
-                if file_name.endswith(".txt")
-            }
-        return solutions
-
-    def _plot(self, solutions, early_stop: int | None = None):
-        fig, axs = plt.subplots(1, len(solutions), figsize=(15, 5), dpi=150)
-
-        if not isinstance(axs, Iterable):
-            axs = [axs]
-        for ax, (solution_name, solution) in zip(axs, solutions.items()):
-            solution.append(solution[0])
-            self.scatter_plot_tsp(ax, solution, solution_name, early_stop)
-
-        return fig
-
-    def scatter_plot_tsp(
-        self, ax, solution: list[int], solution_name: str, early_stop: int | None = None
-    ):
-        ax.scatter(self.x_coords, self.y_coords, s=self.costs / 10)
-        for id, (idx1, idx2) in enumerate(zip(solution[:-1], solution[1:])):
-            ax.plot(
-                [self.x_coords[idx1], self.x_coords[idx2]],
-                [self.y_coords[idx1], self.y_coords[idx2]],
-                color="red",
-            )
-            if id == early_stop:
-                break
-
-        ax.set_title(solution_name)
-        ax.label_outer()
-
-    def _scatter_plot_tsp(self, ax: plt.Axes, solution_name: str):
-        ax.scatter(
-            self.x_coords,
-            self.y_coords,
-            s=self.costs / 10,
-            c="#83C9FFAA",
-            edgecolors="#83C9FF",
-        )
-
-    def plot_animated(self, solution: list[int], solution_name: str) -> FuncAnimation:
-        streamlit_color = "#0E1117"
-        nice_whitey = "#FFDDFF"
-        fig = plt.figure(
-            figsize=(8, 5),
-            dpi=80,
-            clear=True,
-            edgecolor=nice_whitey,
-            linewidth=2,
-        )
-
-        fig.patch.set_facecolor(streamlit_color)
-
-        ax = fig.add_axes(
-            (0, 0, 1, 1),
-            frameon=False,
-            xticks=[],
-            yticks=[],
-        )
-        ax.set_facecolor(streamlit_color)
-
-        self._scatter_plot_tsp(ax, solution_name)
-
-        new_solution = []
-        new_solution.append(solution[0])
-
-        def update(i):
-            idx1, idx2 = (new_solution[-1], solution[i - len(solution) + 1])
-            ax.plot(
-                [self.x_coords[idx1], self.x_coords[idx2]],
-                [self.y_coords[idx1], self.y_coords[idx2]],
-                "o--",
-                linewidth=2,
-                color="#59FB5EA1",  # "#A31235F1",
-            )
-            new_solution.append(solution[i - len(solution) + 1])
-
-        animation = FuncAnimation(fig, update, len(solution))
-
-        return animation
