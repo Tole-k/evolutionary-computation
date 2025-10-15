@@ -1,4 +1,5 @@
-from page_generator import algorithm_comparison_page, Algorithm
+from components import algorithm_comparison_page
+from utils import Algorithm
 
 NN_TO_ANY_2_REGRET_PSEUDOCODE = r""""""
 GREEDY_CYCLE_2_REGRET_PSEUDOCODE = r""""""
