@@ -35,6 +35,8 @@ def cache_to_disk[**P, R](
         kwargs = dict()
     cache_filename = short_hash(cache_filename) + ".dill"
     path = os.path.join(".custom_cache", cache_filename)
+    if not os.path.exists(".custom_cache"):
+        os.makedirs(".custom_cache")
     if os.path.exists(path):
         with open(path, "rb") as f:
             result = dill.load(f)
