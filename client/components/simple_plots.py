@@ -9,12 +9,22 @@ def comparison_plots(df, times):
     col1, col2 = st.columns([1, 1])
     with col1:
         fig = px.box(df, labels={"variable": "", "value": "Cycle Cost"})
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font_color="#e6f7ff",
+        )
         st.plotly_chart(fig)
 
     with col2:
         fig = px.bar(
             pd.DataFrame({name: [time] for name, time in times.items()}).T,
             labels={"index": "", "value": "Processing time [s] (200 runs)"},
+        )
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font_color="#e6f7ff",
         )
         st.plotly_chart(fig)
 

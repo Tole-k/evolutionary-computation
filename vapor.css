@@ -1,0 +1,126 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&family=VT323&display=swap');
+
+:root {
+  --vapor-cyan: #00fff7;
+  --vapor-magenta: #ff2df5;
+  --vapor-purple: #7a5cff;
+  --vapor-bg: #0b0f1a;
+  --vapor-panel: #12172a;
+  --vapor-text: #e6f7ff;
+}
+
+html, body, [data-testid="stAppViewContainer"] {
+  background: radial-gradient(1200px 800px at 20% -10%, rgba(122,92,255,0.12), transparent 55%),
+              radial-gradient(1000px 700px at 100% 0%, rgba(0,255,247,0.08), transparent 50%),
+              var(--vapor-bg) !important;
+  color: var(--vapor-text);
+  font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+h1, h2, h3 {
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 10px rgba(0,255,247,0.35), 0 0 24px rgba(122,92,255,0.25);
+}
+
+.block-container {
+  padding-top: 2rem;
+}
+[data-testid="stSidebar"] {
+  background: linear-gradient(180deg, rgba(122,92,255,0.10) 0%, rgba(0,0,0,0) 40%), var(--vapor-panel) !important;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(4px);
+}
+.stMarkdown, .stText, .stRadio, .stSelectbox, .stMultiSelect, .stNumberInput, .stSlider {
+  color: var(--vapor-text);
+}
+
+input, textarea, .stTextInput input, .stTextArea textarea, .stNumberInput input, .stSelectbox [data-baseweb="select"] > div {
+  background-color: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-radius: 10px !important;
+}
+input:focus, textarea:focus, .stTextInput input:focus, .stTextArea textarea:focus, .stNumberInput input:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(0,255,247,0.35), 0 0 18px rgba(122,92,255,0.25) !important;
+}
+
+.stButton > button {
+  border-radius: 999px !important;
+  border: 1px solid var(--vapor-cyan) !important;
+  background: linear-gradient(90deg, rgba(0,255,247,0.12), rgba(255,45,245,0.12)) !important;
+  color: var(--vapor-text) !important;
+  text-shadow: 0 0 8px rgba(0,255,247,0.35);
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+.stButton > button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 16px rgba(0,255,247,0.35), 0 0 30px rgba(122,92,255,0.25);
+  border-color: var(--vapor-magenta) !important;
+}
+
+[data-testid="stSlider"] .stSlider {
+  --track-color: rgba(0,255,247,0.4);
+}
+[data-testid="stTickBar"] > div:nth-child(odd) {
+  background: linear-gradient(90deg, var(--vapor-cyan), var(--vapor-purple));
+  height: 4px;
+  border-radius: 999px;
+}
+
+[data-testid="stMetricValue"] {
+  font-family: 'VT323', monospace;
+  font-size: 2.6rem !important;
+  color: var(--vapor-cyan) !important;
+  text-shadow: 0 0 12px rgba(0,255,247,0.35);
+}
+
+[data-testid="stTable"] table {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.06) inset;
+}
+[data-testid="stTable"] thead th {
+  background: rgba(122,92,255,0.15) !important;
+}
+[data-testid="stTable"] tbody tr:nth-child(even) td {
+  background: rgba(255,255,255,0.03) !important;
+}
+
+pre, code, .stCodeBlock {
+  background: #0d1022 !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 10px !important;
+  text-shadow: none !important;
+}
+
+/* --- TOP NAVBAR / TOOLBAR OVERRIDES --- */
+[data-testid="stToolbar"] {
+  background: linear-gradient(90deg, rgba(0,0,0,0.6), rgba(20,20,40,0.6)) !important;
+  backdrop-filter: blur(10px) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 0 20px rgba(0,255,247,0.08);
+}
+
+[data-testid="stToolbar"] button,
+[data-testid="stToolbar"] svg {
+  color: #00fff7 !important;
+  opacity: 0.85;
+}
+
+[data-testid="stToolbar"] button:hover,
+[data-testid="stToolbar"] svg:hover {
+  color: #ff2df5 !important;
+  opacity: 1;
+}
+
+header[data-testid="stHeader"] {
+  background: transparent !important;
+  height: 0 !important;
+}
+
+.hide-toolbar [data-testid="stToolbar"] {
+  visibility: hidden;
+  height: 0;
+}

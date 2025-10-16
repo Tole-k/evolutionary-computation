@@ -30,8 +30,8 @@ def algorithm_page(
     if expander:
         with st.expander("Pseudocode"):
             st.markdown(algorithm.pseudocode)
-        st.subheader("Pseudocode")
     else:
+        st.subheader("Pseudocode")
         st.markdown(algorithm.pseudocode)
 
 
