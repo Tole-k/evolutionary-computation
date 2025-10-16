@@ -124,3 +124,34 @@ header[data-testid="stHeader"] {
   visibility: hidden;
   height: 0;
 }
+
+header[data-testid="stHeader"] {
+  background: transparent !important;
+  color: var(--vapor-text) !important;
+  height: 0 !important;
+  padding: 0 !important;
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  border: none !important;
+}
+
+header[data-testid="stHeader"]::before {
+  content: "";
+  display: none !important;
+}
+
+[data-testid="stToolbar"] {
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  border-bottom: none !important;
+}
+
+header[data-testid="stHeader"], [data-testid="stToolbar"] {
+  transition: background 0.3s ease, backdrop-filter 0.3s ease;
+}
