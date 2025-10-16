@@ -124,7 +124,13 @@ greedy_cycle_weighted_2_regret(points, starting_point, distance_matrix, weights)
     return tsp_path
 ```"""
 
-CONCLUSIONS = r""""""
+CONCLUSIONS = r"""
+- Performance of methods with pure 2-regret heuristics is abysmal. 
+- 2-regret heuristics weighted with greedy methods (with 50%/50% weights) marginally outperform purely greedy methods.
+- Since both algorithms have the same computational complexity their run time is very similar with greedy cycle being slightly faster in both variants.
+- NN to any point gives on average slightly better results with weighted heuristic. while greedy cycle fares slightly better with pure 2 regret heuristic.
+
+"""
 
 
 ALGORITHMS = [
