@@ -1,12 +1,12 @@
 use core::f64;
 use csv::ReaderBuilder;
+use ndarray::{Array1, Array2, Axis};
 use pyo3::{pyclass, pymethods};
 use rand::prelude::*;
 use serde::Serialize;
 use std::fs::File;
 use std::io::Write;
 use std::str::FromStr;
-use ndarray::{Array1, Array2, Axis};
 use std::time::Instant;
 
 #[derive(Copy, Clone)]
@@ -34,7 +34,12 @@ pub struct Metrics {
 impl Metrics {
     #[new]
     fn new(name: String, scores: Vec<f64>, total_time: f64, best_solution: Vec<usize>) -> Self {
-        Self { name, scores, total_time, best_solution }
+        Self {
+            name,
+            scores,
+            total_time,
+            best_solution,
+        }
     }
 }
 
@@ -101,13 +106,13 @@ pub fn benchmark_function(
     f: fn(&Vec<DataPoint>, usize, &Array2<f64>) -> Vec<usize>,
     data: &Vec<DataPoint>,
     distance_matrix: &Array2<f64>,
-    name: &str
+    name: &str,
 ) -> Metrics {
     let mut scores: Vec<f64> = vec![];
     let mut best_solution_score: f64 = f64::INFINITY;
     let mut best_solution: Vec<usize> = vec![];
 
-    let mut total_time= 0.0;
+    let mut total_time = 0.0;
     for i in 0..data.len() {
         let start_time = Instant::now();
         let solution = f(data, i, distance_matrix);
@@ -117,7 +122,7 @@ pub fn benchmark_function(
         if solution_score < best_solution_score {
             best_solution_score = solution_score;
             best_solution = solution;
-        }   
+        }
     }
     let name = name.to_string();
     save_solution(best_solution.clone(),format!("{name}.txt").as_str());
@@ -139,8 +144,8 @@ pub fn run_benchmark_suite(
     functions: Vec<fn(&Vec<DataPoint>, usize, &Array2<f64>) -> Vec<usize>>,
     names: Vec<&str>,
     data: &Vec<DataPoint>,
-    distance_matrix: &Array2<f64>
-) -> Vec<Metrics>{
+    distance_matrix: &Array2<f64>,
+) -> Vec<Metrics> {
     let mut results: Vec<Metrics> = vec![];
     for iter_tuple in functions.iter().zip(names.iter()) {
         let (function, name) = iter_tuple;
@@ -151,17 +156,13 @@ pub fn run_benchmark_suite(
 
     file.write_all(list_as_json.as_bytes())
         .expect("Cannot write to the file!");
-    if results.is_empty(){
-        results = vec![ Metrics {name:"test".to_string(), scores:vec![1.1], total_time:1.1, best_solution:vec![1]}]
+    if results.is_empty() {
+        results = vec![Metrics {
+            name: "test".to_string(),
+            scores: vec![1.1],
+            total_time: 1.1,
+            best_solution: vec![1],
+        }]
     }
     results
-}
-
-pub fn save_solution(solution: Vec<usize>, path: &str) {
-    let mut data_file = File::create(path).expect("creation failed");
-    for point_id in solution {
-        data_file
-            .write_all(format!("{point_id}\n").as_bytes())
-            .expect("write failed");
-    }
 }
