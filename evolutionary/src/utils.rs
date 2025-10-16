@@ -166,3 +166,11 @@ pub fn run_benchmark_suite(
     }
     results
 }
+pub fn save_solution(solution: Vec<usize>, path: &str) {
+    let mut data_file = File::create(path).expect("creation failed");
+    for point_id in solution {
+        data_file
+            .write_all(format!("{point_id}\n").as_bytes())
+            .expect("write failed");
+    }
+}
