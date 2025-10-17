@@ -8,6 +8,7 @@ st.sidebar.markdown(
 pages = [
     st.Page("problem.py", title="Problem description"),
     st.Page(os.path.join("pages", "greedy.py"), title="1. Greedy"),
+    st.Page(os.path.join("pages", "regret.py"), title="2. Regret"),
 ]
 
 pg = st.navigation(pages)

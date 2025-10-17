@@ -13,7 +13,7 @@ def plot_animation(tsp_plotter, best_paths, algorithm):
     ).to_jshtml(default_mode="once")
 
 
-def load_solution() -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]]]:
+def load_solution(algorithms: list[Algorithm]) -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]]]:
     """Loads solutions from the json
 
     Returns:
@@ -23,8 +23,7 @@ def load_solution() -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]
 
     if not isinstance(state, str) and state not in ["TSP A", "TSP B"]:
         raise ValueError(f"Impossible TSP state reached: {state}")
-    algs = ["random", "nn_to_last_point", "nn_to_any_point", "greedy_cycle"]
-    solution_data = evolutionary.main(state.replace(" ", ""), algs)  # type: ignore
+    solution_data = evolutionary.main(state.replace(" ", ""), [alg.work_name for alg in algorithms])  # type: ignore
 
     df = pd.DataFrame({solution.name: solution.scores for solution in solution_data})
 
@@ -41,7 +40,7 @@ def algorithm_comparison_page(
 ):
     st.title(name)
 
-    df, times, best_paths = load_solution()
+    df, times, best_paths = load_solution(algorithms)
     comparison_plots(df, times)
 
     algorithms_tabs(algorithms, best_paths)
