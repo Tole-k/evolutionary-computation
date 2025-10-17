@@ -18,7 +18,7 @@ COPY pyproject.toml /app/
 COPY client /app/client
 COPY evolutionary /app/evolutionary
 COPY data /app/data
-
+COPY README.md /app/README.md
 
 RUN python3 -m pip install uv
 RUN uv sync
