@@ -94,9 +94,6 @@ greedy_cycle_2_regret_pass(path, candidate_point, distance_matrix):
     
     return best_pos, min_cost, second_min_cost - min_cost
 
-
-                    
-
 greedy_cycle_weighted_2_regret(points, starting_point, distance_matrix, weights):
     tsp_path = [starting_point]
     not_visited_points = points
