@@ -37,9 +37,6 @@ nn_to_any_2_regret_pass(path, candidate_point, distance_matrix):
     
     return best_pos, min_cost, second_min_cost - min_cost
 
-
-                    
-
 nn_to_any_weighted_2_regret(points, starting_point, distance_matrix, weights):
     tsp_path = [starting_point]
     not_visited_points = points
