@@ -18,12 +18,11 @@ COPY pyproject.toml /app/
 COPY client /app/client
 COPY evolutionary /app/evolutionary
 COPY data /app/data
-
+COPY README.md /app/README.md
 
 RUN python3 -m pip install uv
 RUN uv sync
 RUN cargo build --release --manifest-path evolutionary/Cargo.toml
-RUN uv pip install ./evolutionary
 
 EXPOSE 1415
 CMD [ "uv", "run", "python", "-m", "streamlit", "run", "client/streamlit_app.py", "--server.port", "1415", "--server.address", "0.0.0.0"]

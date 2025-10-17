@@ -10,7 +10,6 @@ dependencies = [
     # "evolutionary",
     "jupyter>=1.1.1",
     "matplotlib>=3.10.7",
-    "maturin>=1.9.6",
     "numpy>=2.3.3",
     "pandas>=2.3.3",
     "pillow>=11.3.0",
@@ -21,5 +20,17 @@ dependencies = [
     "watchdog>=6.0.0",
 ]
 
-# [tool.uv.sources]
-# evolutionary = { path = "evolutionary", editable = true }
+[dependency-groups]
+dev = [
+    "maturin>=1.9.6",
+]
+
+[build-system]
+requires = ["maturin>=1.9,<2.0"]
+build-backend = "maturin"
+
+[tool.maturin]
+module-name = "evolutionary"
+bindings = "pyo3"
+python-source = "."
+manifest-path = "evolutionary/Cargo.toml"
