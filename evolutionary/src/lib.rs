@@ -1,4 +1,5 @@
 mod greedy_algorithms;
+mod regret_heuristics;
 mod utils;
 use ndarray::Array2;
 use pyo3::prelude::*;
@@ -18,6 +19,19 @@ fn get_map() -> HashMap<&'static str, fn(&Vec<utils::DataPoint>, usize, &Array2<
         ),
         ("nn_to_any_point", greedy_algorithms::greedy_nn_to_any_point),
         ("greedy_cycle", greedy_algorithms::greedy_cycle),
+        ("nn_to_any_2_regret", regret_heuristics::nn_to_any_2_regret),
+        (
+            "nn_to_any_weighted_2_regret",
+            regret_heuristics::nn_to_any_weighted_2_regret,
+        ),
+        (
+            "greedy_cycle_2_regret",
+            regret_heuristics::greedy_cycle_2_regret,
+        ),
+        (
+            "greedy_cycle_weighted_2_regret",
+            regret_heuristics::greedy_cycle_weighted_2_regret,
+        ),
     ])
 }
 
