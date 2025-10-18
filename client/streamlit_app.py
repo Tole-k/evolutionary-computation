@@ -3,7 +3,7 @@ import os
 
 st.sidebar.selectbox("Select TSP version", ("TSP A", "TSP B"), key="tsp_version")
 st.sidebar.markdown(
-    "[Link to source code](https://github.com/tole-k/evolutionary-computing)"
+    "[Link to source code](https://github.com/tole-k/evolutionary-computation)"
 )
 pages = [
     st.Page("problem.py", title="Problem description"),
