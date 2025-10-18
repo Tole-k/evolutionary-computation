@@ -33,3 +33,4 @@ module-name = "evolutionary"
 bindings = "pyo3"
 python-source = "."
 manifest-path = "evolutionary/Cargo.toml"
+include = ["evolutionary.pyi"] 

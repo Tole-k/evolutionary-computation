@@ -24,7 +24,9 @@ def report(algorithms: list[Algorithm], name: str, conclusions: str | None = Non
         if not isinstance(state, str) and state not in ["TSP A", "TSP B"]:
             raise ValueError(f"Impossible TSP state reached: {state}")
 
-        solution_data = evolutionary.main(state.replace(" ", ""), [alg.work_name for alg in algorithms])
+        solution_data = evolutionary.main(
+            state.replace(" ", ""), [alg.work_name for alg in algorithms]
+        )
 
         df = pd.DataFrame(
             {solution.name: solution.scores for solution in solution_data}

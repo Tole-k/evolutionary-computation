@@ -36,14 +36,6 @@ fn get_map() -> HashMap<&'static str, fn(&Vec<utils::DataPoint>, usize, &Array2<
 }
 
 #[pyfunction]
-fn benchmark(benchmark_name: String) -> PyResult<i32> {
-    if benchmark_name == "lab1" {
-        Ok(3)
-    } else {
-        Ok(2)
-    }
-}
-#[pyfunction]
 fn main(dataset: &str, names: Vec<String>) -> Vec<utils::Metrics> {
     let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset}.csv"));
     let distance_matrix = utils::calculate_distance_matrix(&data);
@@ -70,7 +62,6 @@ fn complexity(dataset: &str, name: &str) -> Vec<f64> {
 
 #[pymodule]
 fn evolutionary(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(benchmark, m)?)?;
     m.add_function(wrap_pyfunction!(main, m)?)?;
     m.add_function(wrap_pyfunction!(complexity, m)?)?;
     Ok(())
