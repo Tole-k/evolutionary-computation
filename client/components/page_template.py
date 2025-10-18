@@ -13,7 +13,9 @@ def plot_animation(tsp_plotter, best_paths, algorithm):
     ).to_jshtml(default_mode="once")
 
 
-def load_solution(algorithms: list[Algorithm]) -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]]]:
+def load_solution(
+    algorithms: list[Algorithm],
+) -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]]]:
     """Loads solutions from the json
 
     Returns:
@@ -23,7 +25,9 @@ def load_solution(algorithms: list[Algorithm]) -> tuple[pd.DataFrame, dict[str, 
 
     if not isinstance(state, str) and state not in ["TSP A", "TSP B"]:
         raise ValueError(f"Impossible TSP state reached: {state}")
-    solution_data = evolutionary.main(state.replace(" ", ""), [alg.work_name for alg in algorithms])  # type: ignore
+    solution_data = evolutionary.main(
+        state.replace(" ", ""), [alg.work_name for alg in algorithms]
+    )
 
     df = pd.DataFrame({solution.name: solution.scores for solution in solution_data})
 
