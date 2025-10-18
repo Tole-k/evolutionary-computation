@@ -30,11 +30,11 @@ def comparison_plots(df, times):
 
 
 def _plot_complexity_worker(algorithms: list[Algorithm], state):
-    data = {
+    data: dict[str, list[int | float]] = {
         "size": list(range(2, 201)),
     }
     for algorithm in algorithms:
-        data[algorithm.work_name] = evolutionary.complexity(  # type: ignore
+        data[algorithm.work_name] = evolutionary.complexity(
             state.replace(" ", ""), algorithm.work_name
         )
     return pd.DataFrame(data)

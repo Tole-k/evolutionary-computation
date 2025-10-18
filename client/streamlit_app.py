@@ -58,6 +58,9 @@ st.sidebar.selectbox("Select TSP version", ("TSP A", "TSP B"), key="tsp_version"
 
 st.sidebar.toggle("Report mode", key="report_mode")
 
+st.sidebar.markdown(
+    "[Link to source code](https://github.com/tole-k/evolutionary-computation)"
+)
 pages = [
     st.Page("problem.py", title="Problem description"),
     st.Page(os.path.join("pages", "greedy.py"), title="1. Greedy"),

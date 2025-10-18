@@ -26,7 +26,7 @@ def load_solution(
 
     if not isinstance(state, str) and state not in ["TSP A", "TSP B"]:
         raise ValueError(f"Impossible TSP state reached: {state}")
-    solution_data = evolutionary.main(  # type: ignore
+    solution_data = evolutionary.main(
         state.replace(" ", ""), [alg.work_name for alg in algorithms]
     )
 
