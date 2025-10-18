@@ -5,6 +5,7 @@ import evolutionary
 from utils import Algorithm
 from components.simple_plots import comparison_plots, plot_complexity
 from components.algorithm_explanation import algorithms_tabs
+from components.report_template import report
 
 
 def plot_animation(tsp_plotter, best_paths, algorithm):
@@ -42,6 +43,8 @@ def load_solution(
 def algorithm_comparison_page(
     algorithms: list[Algorithm], name: str, conclusions: str | None = None
 ):
+    if st.session_state.get("report_mode"):
+        return report(algorithms, name, conclusions)
     st.title(name)
 
     df, times, best_paths = load_solution(algorithms)

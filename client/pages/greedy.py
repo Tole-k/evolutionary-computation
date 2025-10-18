@@ -148,7 +148,6 @@ greedy_cycle(points, starting_point, distance_matrix):
         remove closest_point from not_visited_points
     return tsp_path
 ```"""
-
 RANDOM_PSEUDOCODE = r"""
 ```
 random (points)
@@ -164,7 +163,6 @@ CONCLUSIONS = r"""
 - **NN to any point** = performs usually worse than Greedy Cycle, with few runs, which got better results (It's possible as they are greedy algorithms, so they can make mistakes and not backtrack them).
 - **Greedy cycle** = very similar to **NN to any point**, much longer time than **NN to last point**, but visibly better result.
 """
-
 
 ALGORITHMS = [
     Algorithm("Random", "random", RANDOM_PSEUDOCODE),

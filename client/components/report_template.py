@@ -1,17 +1,29 @@
 import pandas as pd
 import streamlit as st
-import streamlit.components.v1 as components
 
 import evolutionary
 from components.page_template import Algorithm
 from components.tsp_plot import TSPPlotter
 from problem import main
-from components.algorithm_explanation import algorithm_page
+
+
+def _table(df: pd.DataFrame, algorithms: list[Algorithm]):
+    new_df = pd.DataFrame(
+        [
+            [
+                df[algorithm.work_name].min(),
+                df[algorithm.work_name].mean(),
+                df[algorithm.work_name].max(),
+            ]
+            for algorithm in algorithms
+        ],
+        [algorithm.name for algorithm in algorithms],
+        ["min", "mean", "max"],
+    )
+    st.dataframe(new_df)
 
 
 def report(algorithms: list[Algorithm], name: str, conclusions: str | None = None):
-    name = "Greedy algorithms"
-
     def load_solution(
         state,
     ) -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]]]:
@@ -42,44 +54,28 @@ def report(algorithms: list[Algorithm], name: str, conclusions: str | None = Non
     main(report=True)
 
     st.title(name)
-
+    tsp_plotter_a = TSPPlotter("TSP A", dark_mode=False)  # type: ignore
+    tsp_plotter_b = TSPPlotter("TSP B", dark_mode=False)  # type: ignore
+    df_a, _, best_paths_a = load_solution("TSP A")
+    df_b, _, best_paths_b = load_solution("TSP B")
     for algorithm in algorithms:
         st.header(algorithm.name)
-        for state in ["TSP A", "TSP B"]:
-            st.header(state)
-            _, _, best_paths = load_solution(state)
-            tsp_plotter = TSPPlotter(state)
-            algorithm_page(algorithm, best_paths[algorithm.work_name], tsp_plotter)
-            animation = tsp_plotter.plot_animated(
-                best_paths[algorithm.work_name], algorithm.name
-            )
-            components.html(animation.to_jshtml(default_mode="once"), height=500)
-            st.write(f"Best found path: {best_paths[algorithm.work_name]}")
         st.subheader("Pseudocode")
         st.markdown(algorithm.pseudocode)
+        st.subheader("TSP A")
+        fig = tsp_plotter_a.plot(best_paths_a[algorithm.work_name])
+        st.pyplot(fig)
+        st.write(f"Best found path: {best_paths_a[algorithm.work_name]}")
+        st.subheader("TSP B")
+        fig = tsp_plotter_b.plot(best_paths_b[algorithm.work_name])
+        st.pyplot(fig)
+        st.write(f"Best found path: {best_paths_b[algorithm.work_name]}")
 
+    st.header("TSP A")
+    _table(df_a, algorithms)
+    st.header("TSP B")
+    _table(df_b, algorithms)
     st.divider()
     if conclusions is not None:
         st.subheader("Conclusions")
         st.markdown(conclusions)
-
-    st.write(
-        "Source code is available on https://github.com/tole-k/evolutionary-computation.git"
-    )
-    for algorithm in algorithms:
-        for state in ["TSP A", "TSP B"]:
-            st.header(state)
-            df, _, _ = load_solution(state)
-            new_df = pd.DataFrame(
-                [
-                    [
-                        df[algorithm.work_name].min(),
-                        df[algorithm.work_name].mean(),
-                        df[algorithm.work_name].max(),
-                    ]
-                    for algorithm in algorithms
-                ],
-                [algorithm.name for algorithm in algorithms],
-                ["min", "mean", "max"],
-            )
-            st.dataframe(new_df)
