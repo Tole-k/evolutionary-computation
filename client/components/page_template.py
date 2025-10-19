@@ -41,10 +41,10 @@ def load_solution(
 
 
 def algorithm_comparison_page(
-    algorithms: list[Algorithm], name: str, conclusions: str | None = None
+    algorithms: list[Algorithm], name: str, additional_algorithms: list[Algorithm] | None = None, conclusions: str | None = None
 ):
     if st.session_state.get("report_mode"):
-        return report(algorithms, name, conclusions)
+        return report(algorithms, name, additional_algorithms, conclusions)
     st.title(name)
 
     df, times, best_paths = load_solution(algorithms)

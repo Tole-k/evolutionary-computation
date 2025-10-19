@@ -23,7 +23,7 @@ def _table(df: pd.DataFrame, algorithms: list[Algorithm]):
     st.dataframe(new_df)
 
 
-def report(algorithms: list[Algorithm], name: str, conclusions: str | None = None):
+def report(algorithms: list[Algorithm], name: str, additional_algorithms: list[Algorithm] | None = None, conclusions: str | None = None):
     def load_solution(
         state,
     ) -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]]]:
@@ -39,16 +39,20 @@ def report(algorithms: list[Algorithm], name: str, conclusions: str | None = Non
         solution_data = evolutionary.main(
             state.replace(" ", ""), [alg.work_name for alg in algorithms]
         )
-
         df = pd.DataFrame(
             {solution.name: solution.scores for solution in solution_data}
         )
+        if additional_algorithms is not None:
+            additional_solution_data = evolutionary.main(
+                state.replace(" ", ""), [alg.work_name for alg in additional_algorithms]
+            )
+
+            df = pd.concat([df, pd.DataFrame({solution.name: solution.scores for solution in additional_solution_data})])
 
         times = {solution.name: solution.total_time for solution in solution_data}
         best_solutions = {
             solution.name: solution.best_solution for solution in solution_data
         }
-
         return df, times, best_solutions
 
     main(report=True)
@@ -72,9 +76,10 @@ def report(algorithms: list[Algorithm], name: str, conclusions: str | None = Non
         st.write(f"Best found path: {best_paths_b[algorithm.work_name]}")
 
     st.header("TSP A")
-    _table(df_a, algorithms)
+    final_algorithms = algorithms+additional_algorithms if additional_algorithms is not None else algorithms
+    _table(df_a, final_algorithms)
     st.header("TSP B")
-    _table(df_b, algorithms)
+    _table(df_b, final_algorithms)
     st.divider()
     if conclusions is not None:
         st.subheader("Conclusions")
