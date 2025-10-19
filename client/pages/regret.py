@@ -1,5 +1,6 @@
 from components import algorithm_comparison_page
 from utils import Algorithm
+from pages.greedy import ALGORITHMS as GREEDY_ALGORITHMS
 
 NN_TO_ANY_2_REGRET_PSEUDOCODE = r"""```
 nn_to_any_2_regret_pass(path, candidate_point, distance_matrix):
@@ -135,4 +136,4 @@ ALGORITHMS = [
 
 
 if __name__ == "__main__":
-    algorithm_comparison_page(ALGORITHMS, "Regret algorithms", conclusions=CONCLUSIONS)
+    algorithm_comparison_page(ALGORITHMS, "Regret algorithms", additional_algorithms=GREEDY_ALGORITHMS, conclusions=CONCLUSIONS)
