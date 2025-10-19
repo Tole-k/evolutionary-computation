@@ -59,6 +59,13 @@ class TSPPlotter:
                 linewidth=2,
                 color="#59FB5EA1",  # "#A31235F1",
             )
+        ax.plot(
+            [self.x_coords[solution[-1]], self.x_coords[solution[0]]],
+            [self.y_coords[solution[-1]], self.y_coords[solution[0]]],
+            "o--",
+            linewidth=2,
+            color="#59FB5EA1",  # "#A31235F1",
+        )
 
     def _scatter_plot_tsp(self, ax: Axes):
         ax.scatter(
