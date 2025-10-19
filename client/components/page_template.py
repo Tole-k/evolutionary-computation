@@ -5,6 +5,7 @@ import evolutionary
 from utils import Algorithm
 from components.simple_plots import comparison_plots, plot_complexity
 from components.algorithm_explanation import algorithms_tabs
+from components.report_template import report
 
 
 def plot_animation(tsp_plotter, best_paths, algorithm):
@@ -13,7 +14,9 @@ def plot_animation(tsp_plotter, best_paths, algorithm):
     ).to_jshtml(default_mode="once")
 
 
-def load_solution(algorithms: list[Algorithm]) -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]]]:
+def load_solution(
+    algorithms: list[Algorithm],
+) -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]]]:
     """Loads solutions from the json
 
     Returns:
@@ -23,7 +26,9 @@ def load_solution(algorithms: list[Algorithm]) -> tuple[pd.DataFrame, dict[str, 
 
     if not isinstance(state, str) and state not in ["TSP A", "TSP B"]:
         raise ValueError(f"Impossible TSP state reached: {state}")
-    solution_data = evolutionary.main(state.replace(" ", ""), [alg.work_name for alg in algorithms])  # type: ignore
+    solution_data = evolutionary.main(
+        state.replace(" ", ""), [alg.work_name for alg in algorithms]
+    )
 
     df = pd.DataFrame({solution.name: solution.scores for solution in solution_data})
 
@@ -36,8 +41,10 @@ def load_solution(algorithms: list[Algorithm]) -> tuple[pd.DataFrame, dict[str, 
 
 
 def algorithm_comparison_page(
-    algorithms: list[Algorithm], name: str, conclusions: str | None = None
+    algorithms: list[Algorithm], name: str, additional_algorithms: list[Algorithm] | None = None, conclusions: str | None = None
 ):
+    if st.session_state.get("report_mode"):
+        return report(algorithms, name, additional_algorithms, conclusions)
     st.title(name)
 
     df, times, best_paths = load_solution(algorithms)
@@ -45,16 +52,16 @@ def algorithm_comparison_page(
 
     algorithms_tabs(algorithms, best_paths)
 
-    st.divider()
-    if conclusions is not None:
-        st.subheader("Conclusions")
-        st.markdown(conclusions)
-
     state = st.session_state.get("tsp_version")
     if state not in ["TSP A", "TSP B"]:
         raise ValueError(f"Impossible TSP state reached: {state}")
 
     plot_complexity(algorithms, state)
+
+    st.divider()
+    if conclusions is not None:
+        st.subheader("Conclusions")
+        st.markdown(conclusions)
 
     st.subheader("Appendix")
     tabs = st.tabs([algorithm.name for algorithm in algorithms])

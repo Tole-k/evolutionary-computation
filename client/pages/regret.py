@@ -1,5 +1,6 @@
 from components import algorithm_comparison_page
 from utils import Algorithm
+from pages.greedy import ALGORITHMS as GREEDY_ALGORITHMS
 
 NN_TO_ANY_2_REGRET_PSEUDOCODE = r"""```
 nn_to_any_2_regret_pass(path, candidate_point, distance_matrix):
@@ -36,9 +37,6 @@ nn_to_any_2_regret_pass(path, candidate_point, distance_matrix):
             second_min_cost = cost
     
     return best_pos, min_cost, second_min_cost - min_cost
-
-
-                    
 
 nn_to_any_weighted_2_regret(points, starting_point, distance_matrix, weights):
     tsp_path = [starting_point]
@@ -97,9 +95,6 @@ greedy_cycle_2_regret_pass(path, candidate_point, distance_matrix):
     
     return best_pos, min_cost, second_min_cost - min_cost
 
-
-                    
-
 greedy_cycle_weighted_2_regret(points, starting_point, distance_matrix, weights):
     tsp_path = [starting_point]
     not_visited_points = points
@@ -129,7 +124,6 @@ CONCLUSIONS = r"""
 - 2-regret heuristics weighted with greedy methods (with 50%/50% weights) marginally outperform purely greedy methods.
 - Since both algorithms have the same computational complexity their run time is very similar with greedy cycle being slightly faster in both variants.
 - NN to any point gives on average slightly better results with weighted heuristic. while greedy cycle fares slightly better with pure 2 regret heuristic.
-
 """
 
 
@@ -142,4 +136,4 @@ ALGORITHMS = [
 
 
 if __name__ == "__main__":
-    algorithm_comparison_page(ALGORITHMS, "Regret algorithms", conclusions=CONCLUSIONS)
+    algorithm_comparison_page(ALGORITHMS, "Regret algorithms", additional_algorithms=GREEDY_ALGORITHMS, conclusions=CONCLUSIONS)
