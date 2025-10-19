@@ -76,10 +76,10 @@ def report(algorithms: list[Algorithm], name: str, additional_algorithms: list[A
         st.write(f"Best found path: {best_paths_b[algorithm.work_name]}")
 
     st.header("TSP A")
-    final_algorithms = algorithms+additional_algorithms if additional_algorithms is not None else algorithms
-    _table(df_a, final_algorithms)
+    combined_algorithms = algorithms+additional_algorithms if additional_algorithms is not None else algorithms
+    _table(df_a, combined_algorithms)
     st.header("TSP B")
-    _table(df_b, final_algorithms)
+    _table(df_b, combined_algorithms)
     st.divider()
     if conclusions is not None:
         st.subheader("Conclusions")

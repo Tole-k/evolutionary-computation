@@ -52,16 +52,16 @@ def algorithm_comparison_page(
 
     algorithms_tabs(algorithms, best_paths)
 
-    st.divider()
-    if conclusions is not None:
-        st.subheader("Conclusions")
-        st.markdown(conclusions)
-
     state = st.session_state.get("tsp_version")
     if state not in ["TSP A", "TSP B"]:
         raise ValueError(f"Impossible TSP state reached: {state}")
 
     plot_complexity(algorithms, state)
+
+    st.divider()
+    if conclusions is not None:
+        st.subheader("Conclusions")
+        st.markdown(conclusions)
 
     st.subheader("Appendix")
     tabs = st.tabs([algorithm.name for algorithm in algorithms])
