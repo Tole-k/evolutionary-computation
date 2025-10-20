@@ -3,7 +3,7 @@ from utils import Algorithm
 from pages.greedy import ALGORITHMS as GREEDY_ALGORITHMS
 
 NN_TO_ANY_2_REGRET_PSEUDOCODE = r"""```
-nn_to_any_2_regret_pass(path, candidate_point, distance_matrix):
+nn_to_any_pass(path, point, distance_matrix):
     best_pos = 0
     min_cost = infinity
     
@@ -13,19 +13,19 @@ nn_to_any_2_regret_pass(path, candidate_point, distance_matrix):
     for pos from 0 to length(path):
     
         if pos == 0:
-            cost = distance_matrix[path[0], candidate_point] + candidate_point.cost
+            cost = distance_matrix[path[0], point] + point.cost
 
-        else if pos == length(tsp_path):
-            cost = distance_matrix[path[length(tsp_path) - 1], candidate_point] + candidate_point.cost
+        else if pos == length(path):
+            cost = distance_matrix[path[length(path) - 1], point] + point.cost
 
         else:
-            a = tsp_path[pos - 1]
-            b = tsp_path[pos]
+            a = path[pos - 1]
+            b = path[pos]
             cost =
-                distance_matrix[a, candidate_point] +
-                distance_matrix[candidate_point, b] -
+                distance_matrix[a, point] +
+                distance_matrix[point, b] -
                 distance_matrix[a, b] +
-                candidate_point.cost
+                point.cost
 
         if cost < min_cost:
             second_best_pos = best_pos;
@@ -39,7 +39,7 @@ nn_to_any_2_regret_pass(path, candidate_point, distance_matrix):
     return best_pos, min_cost, second_min_cost - min_cost
 
 nn_to_any_weighted_2_regret(points, starting_point, distance_matrix, weights):
-    tsp_path = [starting_point]
+    path = [starting_point]
     not_visited_points = points
     remove starting_point from not_visited_points
 
@@ -48,21 +48,21 @@ nn_to_any_weighted_2_regret(points, starting_point, distance_matrix, weights):
         best_point = 0
         min_cost = infinity
         
-        for each candidate_point in not_visited_points:
-            pos, cost, regret = nn_to_any_2_regret_pass(tsp_path, candidate_point, distance_matrix)
+        for each point in not_visited_points:
+            pos, cost, regret = nn_to_any_pass(path, point, distance_matrix)
             cost = cost * weights[0] - regret * weights[1]
             if cost < min_cost:
                 min_cost = cost
                 insert_spot = pos
-                best_point = candidate_point
+                best_point = point
         
-        insert closest_point into tsp_path at insert_spot
+        insert closest_point into path at insert_spot
         remove closest_point from not_visited_points
 
-    return tsp_path
+    return path
 ```"""
 GREEDY_CYCLE_2_REGRET_PSEUDOCODE = r"""```
-greedy_cycle_2_regret_pass(path, candidate_point, distance_matrix):
+greedy_cycle_pass(path, point, distance_matrix):
     best_pos = 0
     min_cost = infinity
     
@@ -71,18 +71,18 @@ greedy_cycle_2_regret_pass(path, candidate_point, distance_matrix):
     
     for pos from 0 to length(path):
     
-        if pos == 0 or pos == length(tsp_path):
-            a = tsp_path[length(tsp_path) - 1]
-            b = tsp_path[0]
+        if pos == 0 or pos == length(path):
+            a = path[length(path) - 1]
+            b = path[0]
         else:
-            a = tsp_path[pos - 1]
-            b = tsp_path[pos]
+            a = path[pos - 1]
+            b = path[pos]
 
         cost =
-            distance_matrix[a, candidate_point] +
-            distance_matrix[candidate_point, b] -
+            distance_matrix[a, point] +
+            distance_matrix[point, b] -
             distance_matrix[a, b] +
-            candidate_point.cost
+            point.cost
 
         if cost < min_cost:
             second_best_pos = best_pos;
@@ -96,7 +96,7 @@ greedy_cycle_2_regret_pass(path, candidate_point, distance_matrix):
     return best_pos, min_cost, second_min_cost - min_cost
 
 greedy_cycle_weighted_2_regret(points, starting_point, distance_matrix, weights):
-    tsp_path = [starting_point]
+    path = [starting_point]
     not_visited_points = points
     remove starting_point from not_visited_points
 
@@ -105,18 +105,18 @@ greedy_cycle_weighted_2_regret(points, starting_point, distance_matrix, weights)
         best_point = 0
         min_cost = infinity
         
-        for each candidate_point in not_visited_points:
-            pos, cost, regret = greedy_cycle_2_regret_pass(tsp_path, candidate_point, distance_matrix)
+        for each point in not_visited_points:
+            pos, cost, regret = greedy_cycle_pass(path, point, distance_matrix)
             cost = cost * weights[0] - regret * weights[1]
             if cost < min_cost:
                 min_cost = cost
                 insert_spot = pos
-                best_point = candidate_point
+                best_point = point
         
-        insert closest_point into tsp_path at insert_spot
+        insert closest_point into path at insert_spot
         remove closest_point from not_visited_points
 
-    return tsp_path
+    return path
 ```"""
 
 CONCLUSIONS = r"""

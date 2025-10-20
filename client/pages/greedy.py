@@ -2,16 +2,16 @@ from components import algorithm_comparison_page
 from utils import Algorithm
 
 NN_TO_LAST_POINT_PSEUDOCODE = r"""```
-find_closest(point, points, distance_matrix):
+closest(point, points, distance_matrix):
     closest_distance = infinity
     closest_point = point
 
-    for each candidate_point in points:
-        current_distance = distance_matrix[point, candidate_point] + candidate_point.cost
+    for each point in points:
+        current_distance = distance_matrix[point, point] + point.cost
 
         if current_distance < closest_distance:
             closest_distance = current_distance
-            closest_point = candidate_point
+            closest_point = point
 
     return closest_point, closest_distance
 
@@ -19,134 +19,134 @@ find_closest(point, points, distance_matrix):
 
 greedy_nn_to_last_point(points, starting_point, distance_matrix):
     last_point = starting_point
-    tsp_path = [last_point]
-    not_visited_points = points
-    remove starting_point from not_visited_points
+    path = [last_point]
+    not_visited = points
+    remove starting_point from not_visited
 
-    for i from 1 to ceil(length(points) / 2):
-        closest_point, _ = find_closest(last_point, not_visited_points, distance_matrix)
+    for i from 1 to ceil(len(points) / 2):
+        closest_point, _ = closest(last_point, not_visited, distance_matrix)
 
-        append closest_point to tsp_path
+        append closest_point to path
 
-        remove closest_point from not_visited_points
+        remove closest_point from not_visited
 
         last_point = closest_point
 
-    return tsp_path
+    return path
 ```"""
 NN_TO_ANY_POINT_PSEUDOCODE = r"""```
-find_closest(point, points, distance_matrix):
+closest(point, points, distance_matrix):
     closest_distance = INFINITY
     closest_point = point
 
-    for each candidate_point in points:
-        current_distance = distance_matrix[point, candidate_point] + candidate_point.cost
+    for each point in points:
+        current_distance = distance_matrix[point, point] + point.cost
 
         if current_distance < closest_distance:
             closest_distance = current_distance
-            closest_point = candidate_point
+            closest_point = point
 
     return closest_point, closest_distance
 
 
     
-find_cheapest_extension(point_a, point_b, points, distance_matrix):
+cheapest_ext(point_a, point_b, points, distance_matrix):
     closest_distance = infinity
     closest_point = point_a
 
-    for each candidate_point in points:
+    for each point in points:
         current_distance =
-            distance_matrix[point_a, candidate_point] +
-            distance_matrix[candidate_point, point_b] -
+            distance_matrix[point_a, point] +
+            distance_matrix[point, point_b] -
             distance_matrix[point_a, point_b] +
-            candidate_point.cost
+            point.cost
 
         if current_distance < closest_distance:
             closest_distance = current_distance
-            closest_point = candidate_point
+            closest_point = point
 
     return closest_point, closest_distance
 
 
 
 greedy_nn_to_any_point(points, starting_point, distance_matrix):
-    tsp_path = [starting_point]
-    not_visited_points = points
-    remove starting_point from not_visited_points
+    path = [starting_point]
+    not_visited = points
+    remove starting_point from not_visited
 
-    for i from 1 to ceil(length(points) / 2):
+    for i from 1 to ceil(len(points) / 2):
         insert_spot = 0
         closest_point = 0
         closest_distance = infinity
 
-        for pos from 0 to length(tsp_path):
+        for pos from 0 to len(path):
 
             if pos == 0:
-                point, distance = find_closest(tsp_path[0], not_visited_points, distance_matrix)
+                point, distance = closest(path[0], not_visited, distance_matrix)
 
-            else if pos == length(tsp_path):
-                point, distance = find_closest(tsp_path[length(tsp_path) - 1], not_visited_points, distance_matrix)
+            else if pos == len(path):
+                point, distance = closest(path[len(path) - 1], not_visited, distance_matrix)
 
             else:
-                a = tsp_path[pos - 1]
-                b = tsp_path[pos]
+                a = path[pos - 1]
+                b = path[pos]
                 point, distance =
-                    find_cheapest_extension(a, b, not_visited_points, distance_matrix)
+                    cheapest_ext(a, b, not_visited, distance_matrix)
 
             if distance < closest_distance:
                 closest_distance = distance
                 insert_spot = pos
                 closest_point = point
 
-        insert closest_point into tsp_path at insert_spot
-        remove closest_point from not_visited_points
+        insert closest_point into path at insert_spot
+        remove closest_point from not_visited
 
-    return tsp_path
+    return path
 ```"""
 GREEDY_CYCLE_PSEUDOCODE = r"""```
-find_cheapest_extension(point_a, point_b, points, distance_matrix):
+cheapest_ext(point_a, point_b, points, distance_matrix):
     closest_distance = infinity
     closest_point = point_a
 
-    for each candidate_point in points:
+    for each point in points:
         current_distance =
-            distance_matrix[point_a, candidate_point] +
-            distance_matrix[candidate_point, point_b] -
+            distance_matrix[point_a, point] +
+            distance_matrix[point, point_b] -
             distance_matrix[point_a, point_b] +
-            candidate_point.cost
+            point.cost
 
         if current_distance < closest_distance:
             closest_distance = current_distance
-            closest_point = candidate_point
+            closest_point = point
 
     return closest_point, closest_distance
 
 
 
 greedy_cycle(points, starting_point, distance_matrix):
-    tsp_path = [starting_point]
-    not_visited_points = points
-    remove starting_point from not_visited_points
-    for i from 1 to ceil(length(points) / 2):
+    path = [starting_point]
+    not_visited = points
+    remove starting_point from not_visited
+    for i from 1 to ceil(len(points) / 2):
         insert_spot = 0
         closest_point = starting_point
         closest_distance = infinity
-        for pos from 0 to length(tsp_path):
-            if pos == 0 or pos == length(tsp_path):
-                a = tsp_path[length(tsp_path) - 1]
-                b = tsp_path[0]
+        for pos from 0 to len(path):
+            if pos == 0 or pos == len(path):
+                a = path[len(path) - 1]
+                b = path[0]
             else:
-                a = tsp_path[pos - 1]
-                b = tsp_path[pos]
+                a = path[pos - 1]
+                b = path[pos]
 
-            point, distance = find_cheapest_extension(a, b, not_visited_points, distance_matrix)
+            point, distance = cheapest_ext(a, b, not_visited, distance_matrix)
             if distance < closest_distance:
                 closest_distance = distance
                 insert_spot = pos
                 closest_point = point
-        insert closest_point into tsp_path at insert_spot
-        remove closest_point from not_visited_points
-    return tsp_path
+        insert closest_point into path at insert_spot
+        remove closest_point from not_visited
+    return path
 ```"""
 RANDOM_PSEUDOCODE = r"""
 ```
