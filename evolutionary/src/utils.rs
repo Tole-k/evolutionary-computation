@@ -3,7 +3,9 @@ use csv::ReaderBuilder;
 use ndarray::{Array1, Array2, Axis};
 use pyo3::{pyclass, pymethods};
 use rand::prelude::*;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::fs;
 use std::fs::File;
 use std::io::Write;
 use std::str::FromStr;
@@ -18,7 +20,7 @@ pub struct DataPoint {
 }
 
 #[pyclass]
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Metrics {
     #[pyo3(get, set)]
     pub name: String,
@@ -144,10 +146,18 @@ pub fn run_benchmark_suite(
         let (function, name) = iter_tuple;
         results.push(benchmark_function(*function, data, distance_matrix, name));
     }
-    let list_as_json = serde_json::to_string_pretty(&results).unwrap();
+    let mut old_json: HashMap<String, Metrics> = match fs::read_to_string("result.json") {
+        Ok(data) => serde_json::from_str(&data).unwrap_or_default(),
+        Err(_) => HashMap::new(),
+    };
+    let new_json: HashMap<String, &Metrics> = results.iter().map(|m| (m.name.clone(), m)).collect();
+    for (k,v) in new_json{
+        old_json.insert(k,v.clone());
+    }
+    let map_as_json = serde_json::to_string_pretty(&old_json).unwrap();
     let mut file = File::create("result.json").expect("Could not create file!");
 
-    file.write_all(list_as_json.as_bytes())
+    file.write_all(map_as_json.as_bytes())
         .expect("Cannot write to the file!");
     if results.is_empty() {
         results = vec![Metrics {
