@@ -51,7 +51,7 @@ class TSPPlotter:
 
     def _apply_lines(self, ax: Axes, solution: list[int]):
         ax.scatter(self.x_coords, self.y_coords, s=self.costs / 10)
-        for idx1, idx2 in zip(solution[:-1], solution[1:]):
+        for idx1, idx2 in zip(solution, solution[1:] + [solution[0]]):
             ax.plot(
                 [self.x_coords[idx1], self.x_coords[idx2]],
                 [self.y_coords[idx1], self.y_coords[idx2]],
