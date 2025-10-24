@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import streamlit as st
 
 import evolutionary
@@ -7,20 +8,20 @@ from components.tsp_plot import TSPPlotter
 from problem import main
 
 
-def _table(df: pd.DataFrame, algorithms: list[Algorithm]):
-    new_df = pd.DataFrame(
+def to_dataframe(solution_data):
+    return pd.DataFrame(
         [
             [
-                df[algorithm.work_name].min(),
-                df[algorithm.work_name].mean(),
-                df[algorithm.work_name].max(),
+                np.asarray(solution.scores).min(),
+                np.asarray(solution.scores).mean(),
+                np.asarray(solution.scores).max(),
+                solution.total_time
             ]
-            for algorithm in algorithms
+            for solution in solution_data
         ],
-        [algorithm.name for algorithm in algorithms],
-        ["min", "mean", "max"],
+        [solution.name for solution in solution_data],
+        ["min", "mean", "max", "time [s]"],
     )
-    st.dataframe(new_df)
 
 
 def report(algorithms: list[Algorithm], name: str, additional_algorithms: list[Algorithm] | None = None, conclusions: str | None = None):
@@ -39,15 +40,13 @@ def report(algorithms: list[Algorithm], name: str, additional_algorithms: list[A
         solution_data = evolutionary.main(
             state.replace(" ", ""), [alg.work_name for alg in algorithms]
         )
-        df = pd.DataFrame(
-            {solution.name: solution.scores for solution in solution_data}
-        )
+        df = to_dataframe(solution_data)
         if additional_algorithms is not None:
             additional_solution_data = evolutionary.main(
                 state.replace(" ", ""), [alg.work_name for alg in additional_algorithms]
             )
 
-            df = pd.concat([df, pd.DataFrame({solution.name: solution.scores for solution in additional_solution_data})])
+            df = pd.concat([df, to_dataframe(additional_solution_data)])
 
         times = {solution.name: solution.total_time for solution in solution_data}
         best_solutions = {
@@ -76,10 +75,9 @@ def report(algorithms: list[Algorithm], name: str, additional_algorithms: list[A
         st.write(f"Best found path: {best_paths_b[algorithm.work_name]}")
 
     st.header("TSP A")
-    combined_algorithms = algorithms+additional_algorithms if additional_algorithms is not None else algorithms
-    _table(df_a, combined_algorithms)
+    st.dataframe(df_a)
     st.header("TSP B")
-    _table(df_b, combined_algorithms)
+    st.dataframe(df_b)
     st.divider()
     if conclusions is not None:
         st.subheader("Conclusions")
