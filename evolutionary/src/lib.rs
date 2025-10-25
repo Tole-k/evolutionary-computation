@@ -1,9 +1,13 @@
 mod greedy_algorithms;
+mod local_search;
+mod local_search_base;
 mod regret_heuristics;
 mod utils;
 use ndarray::Array2;
 use pyo3::prelude::*;
 use std::{collections::HashMap, time::Instant};
+
+use crate::utils::Metrics;
 
 fn get_map() -> HashMap<&'static str, fn(&Vec<utils::DataPoint>, usize, &Array2<f64>) -> Vec<usize>>
 {
@@ -32,6 +36,39 @@ fn get_map() -> HashMap<&'static str, fn(&Vec<utils::DataPoint>, usize, &Array2<
             "greedy_cycle_weighted_2_regret",
             regret_heuristics::greedy_cycle_weighted_2_regret,
         ),
+        // ("local_search", local_search::local),
+        (
+            "ls_greedy_edges_random",
+            local_search::ls_greedy_edges_random,
+        ),
+        (
+            "ls_greedy_edges_greedy",
+            local_search::ls_greedy_edges_greedy,
+        ),
+        (
+            "ls_greedy_nodes_random",
+            local_search::ls_greedy_nodes_random,
+        ),
+        (
+            "ls_greedy_nodes_greedy",
+            local_search::ls_greedy_nodes_greedy,
+        ),
+        (
+            "ls_steepest_edges_random",
+            local_search::ls_steepest_edges_random,
+        ),
+        (
+            "ls_steepest_edges_greedy",
+            local_search::ls_steepest_edges_greedy,
+        ),
+        (
+            "ls_steepest_nodes_random",
+            local_search::ls_steepest_nodes_random,
+        ),
+        (
+            "ls_steepest_nodes_greedy",
+            local_search::ls_steepest_nodes_greedy,
+        ),
     ])
 }
 
@@ -44,6 +81,7 @@ fn main(dataset: &str, names: Vec<String>) -> Vec<utils::Metrics> {
     let algorithms = Vec::from_iter(names.iter().map(|s| map[s]));
     utils::run_benchmark_suite(algorithms, names, &data, &distance_matrix)
 }
+
 #[pyfunction]
 fn complexity(dataset: &str, name: &str) -> Vec<f64> {
     let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset}.csv"));
@@ -60,9 +98,30 @@ fn complexity(dataset: &str, name: &str) -> Vec<f64> {
     times
 }
 
+#[pyfunction]
+fn test(dataset: &str) -> Vec<usize> {
+    let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset}.csv"));
+    let distance_matrix = utils::calculate_distance_matrix(&data);
+    local_search::ls_steepest_edges_greedy(&data, 0 as usize, &distance_matrix)
+}
+
+#[pyfunction]
+fn test2(dataset: &str) -> Metrics {
+    let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset}.csv"));
+    let distance_matrix = utils::calculate_distance_matrix(&data);
+    utils::benchmark_function(
+        local_search::ls_steepest_edges_greedy,
+        &data,
+        &distance_matrix,
+        "local_search",
+    )
+}
+
 #[pymodule]
 fn evolutionary(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(main, m)?)?;
     m.add_function(wrap_pyfunction!(complexity, m)?)?;
+    m.add_function(wrap_pyfunction!(test, m)?)?;
+    m.add_function(wrap_pyfunction!(test2, m)?)?;
     Ok(())
 }

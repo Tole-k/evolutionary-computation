@@ -1,4 +1,4 @@
-deactivate
-uv sync -n
-source .venv/bin/activate
-uv run streamlit run client/streamlit_app.py
+maturin develop
+uv pip uninstall evolutionary-computation
+uv pip install -n .
+python test.py

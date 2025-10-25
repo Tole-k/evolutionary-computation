@@ -6,6 +6,8 @@
         "figsize",
         "frameon",
         "maturin",
+        "ndarray",
+        "nums",
         "pyproject",
         "streamlit",
         "TSPA",
