@@ -5,10 +5,12 @@ import os
 from typing import Literal
 import hashlib
 import base64
+import json
 
 import streamlit as st
 import pandas as pd
 import dill
+import evolutionary
 
 
 @dataclass
@@ -70,3 +72,18 @@ def load_TSP_data(tsp_to_load: Literal["TSP A", "TSP B"]):
 
     instance.columns = ["X coordinate", "Y coordinate", "cost"]
     return instance
+
+
+def load_algorithm_results(algorithms: list[Algorithm], tsp_version: str):
+    try:
+        with open('result.json', 'r', encoding="UTF-8") as file:
+            data = json.load(file)
+            solution_data = [evolutionary.Metrics(**data[alg.work_name]) for alg in algorithms]
+            print("loading results")
+
+    except (FileNotFoundError, KeyError):
+        solution_data = evolutionary.main(
+            tsp_version, [alg.work_name for alg in algorithms]
+        )
+        print("saved results not found calculating new ones")
+    return solution_data

@@ -2,10 +2,10 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 
-import evolutionary
 from components.page_template import Algorithm
 from components.tsp_plot import TSPPlotter
 from problem import main
+from utils import load_algorithm_results
 
 
 def to_dataframe(solution_data):
@@ -37,14 +37,10 @@ def report(algorithms: list[Algorithm], name: str, additional_algorithms: list[A
         if not isinstance(state, str) and state not in ["TSP A", "TSP B"]:
             raise ValueError(f"Impossible TSP state reached: {state}")
 
-        solution_data = evolutionary.main(
-            state.replace(" ", ""), [alg.work_name for alg in algorithms]
-        )
+        solution_data = load_algorithm_results(algorithms, state.replace(" ", ""))
         df = to_dataframe(solution_data)
         if additional_algorithms is not None:
-            additional_solution_data = evolutionary.main(
-                state.replace(" ", ""), [alg.work_name for alg in additional_algorithms]
-            )
+            additional_solution_data = load_algorithm_results(additional_algorithms, state.replace(" ", ""))
 
             df = pd.concat([df, to_dataframe(additional_solution_data)])
 
