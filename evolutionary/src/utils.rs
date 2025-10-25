@@ -27,7 +27,7 @@ pub struct Metrics {
     #[pyo3(get, set)]
     pub scores: Vec<f64>,
     #[pyo3(get, set)]
-    pub total_time: f64,
+    pub times: Vec<f64>,
     #[pyo3(get, set)]
     pub best_solution: Vec<usize>,
 }
@@ -35,11 +35,11 @@ pub struct Metrics {
 #[pymethods]
 impl Metrics {
     #[new]
-    fn new(name: String, scores: Vec<f64>, total_time: f64, best_solution: Vec<usize>) -> Self {
+    fn new(name: String, scores: Vec<f64>, times: Vec<f64>, best_solution: Vec<usize>) -> Self {
         Self {
             name,
             scores,
-            total_time,
+            times,
             best_solution,
         }
     }
@@ -114,11 +114,11 @@ pub fn benchmark_function(
     let mut best_solution_score: f64 = f64::INFINITY;
     let mut best_solution: Vec<usize> = vec![];
 
-    let mut total_time = 0.0;
+    let mut times = vec![];
     for i in 0..data.len() {
         let start_time = Instant::now();
         let solution = f(data, i, distance_matrix);
-        total_time += start_time.elapsed().as_secs_f64();
+        times.push(start_time.elapsed().as_secs_f64());
         let solution_score = check_solution(&solution, data, distance_matrix);
         scores.push(solution_score);
         if solution_score < best_solution_score {
@@ -130,7 +130,7 @@ pub fn benchmark_function(
     Metrics {
         name,
         scores,
-        total_time,
+        times,
         best_solution,
     }
 }
@@ -151,8 +151,8 @@ pub fn run_benchmark_suite(
         Err(_) => HashMap::new(),
     };
     let new_json: HashMap<String, &Metrics> = results.iter().map(|m| (m.name.clone(), m)).collect();
-    for (k,v) in new_json{
-        old_json.insert(k,v.clone());
+    for (k, v) in new_json {
+        old_json.insert(k, v.clone());
     }
     let map_as_json = serde_json::to_string_pretty(&old_json).unwrap();
     let mut file = File::create("result.json").expect("Could not create file!");
@@ -163,7 +163,7 @@ pub fn run_benchmark_suite(
         results = vec![Metrics {
             name: "test".to_string(),
             scores: vec![1.1],
-            total_time: 1.1,
+            times: vec![1.1],
             best_solution: vec![1],
         }]
     }

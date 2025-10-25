@@ -30,7 +30,7 @@ def load_solution(
 
     df = pd.DataFrame({solution.name: solution.scores for solution in solution_data})
 
-    times = {solution.name: solution.total_time for solution in solution_data}
+    times = {solution.name: sum(solution.scores) for solution in solution_data}
     best_solutions = {
         solution.name: solution.best_solution for solution in solution_data
     }

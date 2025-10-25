@@ -15,19 +15,22 @@ def to_dataframe(solution_data):
                 np.asarray(solution.scores).min(),
                 np.asarray(solution.scores).mean(),
                 np.asarray(solution.scores).max(),
-                solution.total_time
+                np.asarray(solution.times).min(),
+                np.asarray(solution.times).mean(),
+                np.asarray(solution.times).max(),
+                np.asarray(solution.times).sum(),
             ]
             for solution in solution_data
         ],
         [solution.name for solution in solution_data],
-        ["min", "mean", "max", "time [s]"],
+        ["min score", "mean score", "max score", "min time [s]", "mean time [s]", "max time [s]", "total time [s]"],
     )
 
 
 def report(algorithms: list[Algorithm], name: str, additional_algorithms: list[Algorithm] | None = None, conclusions: str | None = None):
     def load_solution(
         state,
-    ) -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]]]:
+    ) -> tuple[pd.DataFrame, dict[str, list[int]]]:
         """Loads solutions from the json
 
         Returns:
@@ -44,19 +47,18 @@ def report(algorithms: list[Algorithm], name: str, additional_algorithms: list[A
 
             df = pd.concat([df, to_dataframe(additional_solution_data)])
 
-        times = {solution.name: solution.total_time for solution in solution_data}
         best_solutions = {
             solution.name: solution.best_solution for solution in solution_data
         }
-        return df, times, best_solutions
+        return df, best_solutions
 
     main(report=True)
 
     st.title(name)
     tsp_plotter_a = TSPPlotter("TSP A", dark_mode=False)  # type: ignore
     tsp_plotter_b = TSPPlotter("TSP B", dark_mode=False)  # type: ignore
-    df_a, _, best_paths_a = load_solution("TSP A")
-    df_b, _, best_paths_b = load_solution("TSP B")
+    df_a, best_paths_a = load_solution("TSP A")
+    df_b, best_paths_b = load_solution("TSP B")
     for algorithm in algorithms:
         st.header(algorithm.name)
         st.subheader("Pseudocode")
@@ -71,9 +73,17 @@ def report(algorithms: list[Algorithm], name: str, additional_algorithms: list[A
         st.write(f"Best found path: {best_paths_b[algorithm.work_name]}")
 
     st.header("TSP A")
-    st.dataframe(df_a)
+    st.subheader("Scores")
+    st.dataframe(df_a[["min score", "mean score", "max score"]])
+    st.subheader("Times")
+    st.dataframe(df_a[["min time [s]", "mean time [s]", "max time [s]", "total time [s]"]])
+
     st.header("TSP B")
-    st.dataframe(df_b)
+    st.subheader("Scores")
+    st.dataframe(df_b[["min score", "mean score", "max score"]])
+    st.subheader("Times")
+    st.dataframe(df_b[["min time [s]", "mean time [s]", "max time [s]", "total time [s]"]])
+
     st.divider()
     if conclusions is not None:
         st.subheader("Conclusions")
