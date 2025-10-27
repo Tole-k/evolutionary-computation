@@ -74,15 +74,18 @@ def report(algorithms: list[Algorithm], name: str, additional_algorithms: list[A
 
     st.header("TSP A")
     st.subheader("Scores")
-    st.dataframe(df_a[["min score", "mean score", "max score"]])
+    row_height = 35
+    height = row_height*(len(df_a)+1)
+    st.dataframe(df_a[["min score", "mean score", "max score"]], height=height)
     st.subheader("Times")
-    st.dataframe(df_a[["min time [s]", "mean time [s]", "max time [s]", "total time [s]"]])
+    st.dataframe(df_a[["min time [s]", "mean time [s]", "max time [s]", "total time [s]"]], height=height)
 
     st.header("TSP B")
     st.subheader("Scores")
-    st.dataframe(df_b[["min score", "mean score", "max score"]])
+    height = row_height*(len(df_b)+1)
+    st.dataframe(df_b[["min score", "mean score", "max score"]], height=height)
     st.subheader("Times")
-    st.dataframe(df_b[["min time [s]", "mean time [s]", "max time [s]", "total time [s]"]])
+    st.dataframe(df_b[["min time [s]", "mean time [s]", "max time [s]", "total time [s]"]], height=height)
 
     st.divider()
     if conclusions is not None:
