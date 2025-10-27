@@ -3,6 +3,8 @@ use csv::ReaderBuilder;
 use ndarray::{Array1, Array2, Axis};
 use pyo3::{pyclass, pymethods};
 use rand::prelude::*;
+use rayon::iter::IntoParallelRefIterator;
+use rayon::prelude::*;
 use serde::Serialize;
 use std::fs::File;
 use std::io::Write;
@@ -133,16 +135,70 @@ pub fn benchmark_function(
     }
 }
 
+pub fn benchmark_function_mc(
+    f: fn(&Vec<DataPoint>, usize, &Array2<f64>) -> Vec<usize>,
+    data: &Vec<DataPoint>,
+    distance_matrix: &Array2<f64>,
+    name: &str,
+) -> Metrics {
+    let mut scores: Vec<f64> = vec![];
+    let mut best_solution_score: f64 = f64::INFINITY;
+    let mut best_solution: Vec<usize> = vec![];
+
+    let mut total_time = 0.0;
+
+    let a: Vec<(f64, f64, Vec<usize>)> = (0..data.len())
+        .collect::<Vec<usize>>()
+        .par_iter()
+        .with_min_len(25)
+        .map(|&i| {
+            let start_time = Instant::now();
+            let solution = f(data, i, distance_matrix);
+            (
+                check_solution(&solution, data, distance_matrix),
+                start_time.elapsed().as_secs_f64(),
+                solution,
+            )
+        })
+        .collect();
+
+    for (score, time, solution) in a {
+        scores.push(score);
+        total_time += time;
+        if score < best_solution_score {
+            best_solution_score = score;
+            best_solution = solution;
+        }
+    }
+    let name = name.to_string();
+    Metrics {
+        name,
+        scores,
+        total_time,
+        best_solution,
+    }
+}
+
 pub fn run_benchmark_suite(
     functions: Vec<fn(&Vec<DataPoint>, usize, &Array2<f64>) -> Vec<usize>>,
     names: Vec<&str>,
     data: &Vec<DataPoint>,
     distance_matrix: &Array2<f64>,
+    mc: bool,
 ) -> Vec<Metrics> {
     let mut results: Vec<Metrics> = vec![];
     for iter_tuple in functions.iter().zip(names.iter()) {
         let (function, name) = iter_tuple;
-        results.push(benchmark_function(*function, data, distance_matrix, name));
+        if mc {
+            results.push(benchmark_function_mc(
+                *function,
+                data,
+                distance_matrix,
+                name,
+            ));
+        } else {
+            results.push(benchmark_function(*function, data, distance_matrix, name));
+        }
     }
     let list_as_json = serde_json::to_string_pretty(&results).unwrap();
     let mut file = File::create("result.json").expect("Could not create file!");
