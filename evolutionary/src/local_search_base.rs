@@ -165,3 +165,31 @@ pub fn local_search(
     }
     current_solution
 }
+
+pub fn local_search_full_desc(
+    data: &Vec<DataPoint>,
+    initial_solution: Vec<usize>,
+    distance_matrix: &Array2<f64>,
+    greedy: bool,
+    change_edges: bool,
+) -> Vec<Vec<usize>> {
+    let mut full_solution: Vec<Vec<usize>> = Vec::new();
+    full_solution.push(initial_solution.clone());
+    let mut current_solution = initial_solution.clone();
+    loop {
+        let (solution, best_delta) = search_neighborhood(
+            &current_solution,
+            data,
+            distance_matrix,
+            greedy,
+            change_edges,
+        );
+        if best_delta < 0.0 {
+            full_solution.push(solution.clone());
+            current_solution = solution;
+        } else {
+            break;
+        }
+    }
+    full_solution
+}

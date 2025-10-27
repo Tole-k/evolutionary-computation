@@ -44,8 +44,9 @@ fn intra_change(solution, i, j):
 
 EDGES = r"""
 fn intra(i, j):
+    (a, b) = (i, j)
     if (j + 1) % n == j:
-        (i, j) = (j, i)
+        (a, b) = (j, i)
     return Distance[a-1][a] - Distance[b][b+1] + Distance[a-1][b] + Distance[a][b+1]
 
 fn intra_change(solution, i, j):
@@ -143,16 +144,50 @@ CONCLUSIONS = r"""
 """
 
 ALGORITHMS = [
-    Algorithm("ls_greedy_edges_random", "ls_greedy_edges_random", INITIAL_RANDOM + EDGES + GREEDY),
-    Algorithm("ls_greedy_edges_greedy", "ls_greedy_edges_greedy", INITIAL_GREEDY + EDGES + GREEDY),
-    Algorithm("ls_greedy_nodes_random", "ls_greedy_nodes_random", INITIAL_RANDOM + NODES + GREEDY),
-    Algorithm("ls_greedy_nodes_greedy", "ls_greedy_nodes_greedy", INITIAL_GREEDY + NODES + GREEDY),
-    Algorithm("ls_steepest_edges_random", "ls_steepest_edges_random", INITIAL_RANDOM + EDGES + STEEPEST),
-    Algorithm("ls_steepest_edges_greedy", "ls_steepest_edges_greedy", INITIAL_GREEDY + EDGES + STEEPEST),
-    Algorithm("ls_steepest_nodes_random", "ls_steepest_nodes_random", INITIAL_RANDOM + NODES + STEEPEST),
-    Algorithm("ls_steepest_nodes_greedy", "ls_steepest_nodes_greedy", INITIAL_GREEDY + NODES + STEEPEST),
+    Algorithm(
+        "ls_greedy_edges_random",
+        "ls_greedy_edges_random",
+        INITIAL_RANDOM + EDGES + GREEDY,
+    ),
+    Algorithm(
+        "ls_greedy_edges_greedy",
+        "ls_greedy_edges_greedy",
+        INITIAL_GREEDY + EDGES + GREEDY,
+    ),
+    Algorithm(
+        "ls_greedy_nodes_random",
+        "ls_greedy_nodes_random",
+        INITIAL_RANDOM + NODES + GREEDY,
+    ),
+    Algorithm(
+        "ls_greedy_nodes_greedy",
+        "ls_greedy_nodes_greedy",
+        INITIAL_GREEDY + NODES + GREEDY,
+    ),
+    Algorithm(
+        "ls_steepest_edges_random",
+        "ls_steepest_edges_random",
+        INITIAL_RANDOM + EDGES + STEEPEST,
+    ),
+    Algorithm(
+        "ls_steepest_edges_greedy",
+        "ls_steepest_edges_greedy",
+        INITIAL_GREEDY + EDGES + STEEPEST,
+    ),
+    Algorithm(
+        "ls_steepest_nodes_random",
+        "ls_steepest_nodes_random",
+        INITIAL_RANDOM + NODES + STEEPEST,
+    ),
+    Algorithm(
+        "ls_steepest_nodes_greedy",
+        "ls_steepest_nodes_greedy",
+        INITIAL_GREEDY + NODES + STEEPEST,
+    ),
 ]
 
 
 if __name__ == "__main__":
-    algorithm_comparison_page(ALGORITHMS + regret_algorithms, "Local Search", conclusions=CONCLUSIONS)
+    algorithm_comparison_page(
+        ALGORITHMS + regret_algorithms, "Local Search", conclusions=CONCLUSIONS
+    )

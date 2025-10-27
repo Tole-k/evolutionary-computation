@@ -66,6 +66,7 @@ pages = [
     st.Page(os.path.join("pages", "greedy.py"), title="1. Greedy"),
     st.Page(os.path.join("pages", "regret.py"), title="2. Regret"),
     st.Page(os.path.join("pages", "local.py"), title="3. Local Search"),
+    st.Page(os.path.join("pages", "test.py"), title="Test Display"),
 ]
 
 pg = st.navigation(pages)

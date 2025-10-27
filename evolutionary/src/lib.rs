@@ -36,7 +36,7 @@ fn get_map() -> HashMap<&'static str, fn(&Vec<utils::DataPoint>, usize, &Array2<
             "greedy_cycle_weighted_2_regret",
             regret_heuristics::greedy_cycle_weighted_2_regret,
         ),
-        // ("local_search", local_search::local),
+        // Local Searches
         (
             "ls_greedy_edges_random",
             local_search::ls_greedy_edges_random,
@@ -68,6 +68,45 @@ fn get_map() -> HashMap<&'static str, fn(&Vec<utils::DataPoint>, usize, &Array2<
         (
             "ls_steepest_nodes_greedy",
             local_search::ls_steepest_nodes_greedy,
+        ),
+    ])
+}
+
+fn map_full()
+-> HashMap<&'static str, fn(&Vec<utils::DataPoint>, usize, &Array2<f64>) -> Vec<Vec<usize>>> {
+    HashMap::from([
+        (
+            "ls_greedy_edges_random",
+            local_search::ls_greedy_edges_random_full
+                as fn(&Vec<utils::DataPoint>, usize, &Array2<f64>) -> Vec<Vec<usize>>,
+        ),
+        (
+            "ls_greedy_edges_greedy",
+            local_search::ls_greedy_edges_greedy_full,
+        ),
+        (
+            "ls_greedy_nodes_random",
+            local_search::ls_greedy_nodes_random_full,
+        ),
+        (
+            "ls_greedy_nodes_greedy",
+            local_search::ls_greedy_nodes_greedy_full,
+        ),
+        (
+            "ls_steepest_edges_random",
+            local_search::ls_steepest_edges_random_full,
+        ),
+        (
+            "ls_steepest_edges_greedy",
+            local_search::ls_steepest_edges_greedy_full,
+        ),
+        (
+            "ls_steepest_nodes_random",
+            local_search::ls_steepest_nodes_random_full,
+        ),
+        (
+            "ls_steepest_nodes_greedy",
+            local_search::ls_steepest_nodes_greedy_full,
         ),
     ])
 }
@@ -108,11 +147,20 @@ fn complexity(dataset: &str, name: &str) -> Vec<f64> {
     times
 }
 
+#[pyfunction]
+fn solution_history(dataset: &str, name: &str, point: usize) -> Vec<Vec<usize>> {
+    let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset}.csv"));
+    let distance_matrix = utils::calculate_distance_matrix(&data);
+    let f = map_full()[name];
+    f(&data, point, &distance_matrix)
+}
+
 #[pymodule]
 fn evolutionary(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(main, m)?)?;
     m.add_function(wrap_pyfunction!(main_mc, m)?)?;
     m.add_function(wrap_pyfunction!(complexity, m)?)?;
+    m.add_function(wrap_pyfunction!(solution_history, m)?)?;
     m.add_class::<Metrics>()?;
     Ok(())
 }
