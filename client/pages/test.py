@@ -18,11 +18,13 @@ algorithm = st.selectbox(
     ],
 )
 
+
+tsp_version: str = st.session_state.get("tsp_version", "TSP A")
 animation = (
     TSPPlotter("TSP A")
     .plot_evolution(
         evolutionary.solution_history(
-            st.session_state.get("tsp_version").replace(" ", ""),
+            tsp_version.replace(" ", ""),
             algorithm,
             random.randint(0, 199),
         )
@@ -30,5 +32,3 @@ animation = (
     .to_jshtml(5)
 )
 components.html(animation, height=500)
-
-# algorithm_comparison_page(ALGORITHMS, "test")

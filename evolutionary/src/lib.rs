@@ -1,6 +1,7 @@
 mod greedy_algorithms;
 mod local_search;
 mod local_search_base;
+mod local_search_candidates;
 mod regret_heuristics;
 mod utils;
 use ndarray::Array2;
@@ -69,6 +70,7 @@ fn get_map() -> HashMap<&'static str, fn(&Vec<utils::DataPoint>, usize, &Array2<
             "ls_steepest_nodes_greedy",
             local_search::ls_steepest_nodes_greedy,
         ),
+        ("ls_candidate", local_search_candidates::ls_candidate),
     ])
 }
 
