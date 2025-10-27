@@ -36,14 +36,14 @@ def report(algorithms: list[Algorithm], name: str, additional_algorithms: list[A
         if not isinstance(state, str) and state not in ["TSP A", "TSP B"]:
             raise ValueError(f"Impossible TSP state reached: {state}")
 
-        solution_data = evolutionary.main(
+        solution_data = evolutionary.main_mc(
             state.replace(" ", ""), [alg.work_name for alg in algorithms]
         )
         df = pd.DataFrame(
             {solution.name: solution.scores for solution in solution_data}
         )
         if additional_algorithms is not None:
-            additional_solution_data = evolutionary.main(
+            additional_solution_data = evolutionary.main_mc(
                 state.replace(" ", ""), [alg.work_name for alg in additional_algorithms]
             )
 
