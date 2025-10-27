@@ -7,8 +7,6 @@ use ndarray::Array2;
 use pyo3::prelude::*;
 use std::{collections::HashMap, time::Instant};
 
-use crate::utils::Metrics;
-
 fn get_map() -> HashMap<&'static str, fn(&Vec<utils::DataPoint>, usize, &Array2<f64>) -> Vec<usize>>
 {
     HashMap::from([
@@ -79,7 +77,17 @@ fn main(dataset: &str, names: Vec<String>) -> Vec<utils::Metrics> {
     let names: Vec<&str> = names.iter().map(|s| &**s).collect();
     let map = get_map();
     let algorithms = Vec::from_iter(names.iter().map(|s| map[s]));
-    utils::run_benchmark_suite(algorithms, names, &data, &distance_matrix)
+    utils::run_benchmark_suite(algorithms, names, &data, &distance_matrix, false)
+}
+
+#[pyfunction]
+fn main_mc(dataset: &str, names: Vec<String>) -> Vec<utils::Metrics> {
+    let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset}.csv"));
+    let distance_matrix = utils::calculate_distance_matrix(&data);
+    let names: Vec<&str> = names.iter().map(|s| &**s).collect();
+    let map = get_map();
+    let algorithms = Vec::from_iter(names.iter().map(|s| map[s]));
+    utils::run_benchmark_suite(algorithms, names, &data, &distance_matrix, true)
 }
 
 #[pyfunction]
@@ -98,30 +106,10 @@ fn complexity(dataset: &str, name: &str) -> Vec<f64> {
     times
 }
 
-#[pyfunction]
-fn test(dataset: &str) -> Vec<usize> {
-    let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset}.csv"));
-    let distance_matrix = utils::calculate_distance_matrix(&data);
-    local_search::ls_steepest_edges_greedy(&data, 0 as usize, &distance_matrix)
-}
-
-#[pyfunction]
-fn test2(dataset: &str) -> Metrics {
-    let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset}.csv"));
-    let distance_matrix = utils::calculate_distance_matrix(&data);
-    utils::benchmark_function(
-        local_search::ls_steepest_edges_greedy,
-        &data,
-        &distance_matrix,
-        "local_search",
-    )
-}
-
 #[pymodule]
 fn evolutionary(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(main, m)?)?;
+    m.add_function(wrap_pyfunction!(main_mc, m)?)?;
     m.add_function(wrap_pyfunction!(complexity, m)?)?;
-    m.add_function(wrap_pyfunction!(test, m)?)?;
-    m.add_function(wrap_pyfunction!(test2, m)?)?;
     Ok(())
 }

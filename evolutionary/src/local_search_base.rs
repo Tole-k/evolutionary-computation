@@ -3,46 +3,86 @@ use ndarray::Array2;
 use rand::seq::SliceRandom;
 use std::collections::HashSet;
 
-use crate::utils::{DataPoint, check_solution};
+use crate::utils::DataPoint;
 
-pub fn intra_neighbors(solution: &Vec<usize>) -> Vec<Vec<usize>> {
-    // n^2 complexity: 50 000 solutions per call
+fn intra(solution: &Vec<usize>, i: usize, j: usize, distance_matrix: &Array2<f64>) -> f64 {
     let n = solution.len();
-    let mut solutions: Vec<Vec<usize>> = vec![];
-    for i in 0..n - 1 {
-        for j in i + 1..n {
-            let mut new_solution = solution.clone();
-            new_solution.swap(i, j);
-            solutions.push(new_solution);
-        }
+    if i + 1 == j {
+        return -distance_matrix[[solution[(i - 1 + n) % n], solution[i]]]
+            - distance_matrix[[solution[j], solution[(j + 1) % n]]]
+            + distance_matrix[[solution[(i - 1 + n) % n], solution[j]]]
+            + distance_matrix[[solution[i], solution[(j + 1) % n]]];
+    } else if (j + 1) % n == i {
+        return -distance_matrix[[solution[i], solution[(i + 1) % n]]]
+            - distance_matrix[[solution[(j - 1) % n], solution[j]]]
+            + distance_matrix[[solution[j], solution[(i + 1) % n]]]
+            + distance_matrix[[solution[(j - 1) % n], solution[i]]];
+    } else {
+        return -distance_matrix[[solution[(i - 1 + n) % n], solution[i]]]
+            - distance_matrix[[solution[i], solution[(i + 1) % n]]]
+            - distance_matrix[[solution[(j - 1) % n], solution[j]]]
+            - distance_matrix[[solution[j], solution[(j + 1) % n]]]
+            + distance_matrix[[solution[(i - 1 + n) % n], solution[j]]]
+            + distance_matrix[[solution[j], solution[(i + 1) % n]]]
+            + distance_matrix[[solution[(j - 1) % n], solution[i]]]
+            + distance_matrix[[solution[i], solution[(j + 1) % n]]];
     }
-    solutions
 }
 
-pub fn inter_neighbors(solution: &Vec<usize>, data: &Vec<DataPoint>) -> Vec<Vec<usize>> {
+fn intra_edges(solution: &Vec<usize>, i: usize, j: usize, distance_matrix: &Array2<f64>) -> f64 {
     let n = solution.len();
-    let hash_solution: HashSet<usize> = HashSet::from_iter(solution.clone());
-    let m = data.len();
+    let (mut a, mut b) = (i, j);
+    if (j + 1) % n == i {
+        a = j;
+        b = i;
+    }
+    return -distance_matrix[[solution[(a - 1 + n) % n], solution[a]]]
+        - distance_matrix[[solution[b], solution[(b + 1) % n]]]
+        + distance_matrix[[solution[(a - 1 + n) % n], solution[b]]]
+        + distance_matrix[[solution[a], solution[(b + 1) % n]]];
+}
+
+fn inter(
+    solution: &Vec<usize>,
+    i: usize,
+    j: usize,
+    distance_matrix: &Array2<f64>,
+    data: &Vec<DataPoint>,
+) -> f64 {
+    let n = solution.len();
+    return -distance_matrix[[solution[(i - 1 + n) % n], solution[i]]]
+        - distance_matrix[[solution[i], solution[(i + 1) % n]]]
+        - data[solution[i]].cost as f64
+        + distance_matrix[[solution[(i - 1 + n) % n], j]]
+        + distance_matrix[[j, solution[(i + 1) % n]]]
+        + data[j].cost as f64;
+}
+
+fn generate_neighborhood(
+    current_solution: &Vec<usize>,
+    _data: &Vec<DataPoint>,
+) -> Vec<(usize, usize, usize)> {
+    let n = current_solution.len();
+    let mut solutions: Vec<(usize, usize, usize)> = Vec::new();
+
+    for i in 0..n - 1 {
+        for j in i + 1..n {
+            solutions.push((0, i, j));
+        }
+    }
+
+    let hash_solution: HashSet<usize> = HashSet::from_iter(current_solution.clone());
+    let m = _data.len();
     let all: HashSet<usize> = (0..m).collect();
     let difference: Vec<usize> = all.difference(&hash_solution).cloned().collect();
 
-    let mut solutions: Vec<Vec<usize>> = vec![];
     for i in 0..n {
         for j in &difference {
-            let mut new_solution = solution.clone();
-            new_solution[i] = *j;
-            solutions.push(new_solution);
+            solutions.push((1, i, *j));
         }
     }
+    solutions.shuffle(&mut rand::rng());
     solutions
-}
-
-fn generate_neighborhood(current_solution: &Vec<usize>, _data: &Vec<DataPoint>) -> Vec<Vec<usize>> {
-    let mut intra = intra_neighbors(current_solution);
-    let mut inter = inter_neighbors(current_solution, _data);
-    intra.append(&mut inter);
-    intra.shuffle(&mut rand::rng());
-    intra
 }
 
 fn search_neighborhood(
@@ -50,19 +90,55 @@ fn search_neighborhood(
     data: &Vec<DataPoint>,
     distance_matrix: &Array2<f64>,
     greedy: bool,
+    change_edges: bool,
 ) -> (Vec<usize>, f64) {
-    let mut best_solution: Vec<usize> = vec![];
-    let mut best_score: f64 = f64::INFINITY;
-    for solution in generate_neighborhood(current_solution, data) {
-        let score: f64 = check_solution(&solution, data, distance_matrix);
-        if score < best_score {
-            (best_score, best_solution) = (score, solution);
-            if greedy {
-                break;
+    let mut best_solution: Vec<usize> = current_solution.clone();
+    let mut best_delta: f64 = 0.0;
+    for (index, i, j) in generate_neighborhood(current_solution, data) {
+        if index == 0 && change_edges {
+            let delta = intra_edges(current_solution, i, j, distance_matrix);
+            if delta < best_delta {
+                let mut new_solution = current_solution.clone();
+                let sub_slice = &mut new_solution[i..=j];
+                sub_slice.reverse();
+                (best_delta, best_solution) = (delta, new_solution);
+                if greedy {
+                    break;
+                }
+            }
+        } else if index == 1 && change_edges {
+            let delta = inter(current_solution, i, j, distance_matrix, data);
+            if delta < best_delta {
+                let mut new_solution = current_solution.clone();
+                new_solution[i] = j;
+                (best_delta, best_solution) = (delta, new_solution);
+                if greedy {
+                    break;
+                }
+            }
+        } else if index == 0 {
+            let delta = intra(current_solution, i, j, distance_matrix);
+            if delta < best_delta {
+                let mut new_solution = current_solution.clone();
+                new_solution.swap(i, j);
+                (best_delta, best_solution) = (delta, new_solution);
+                if greedy {
+                    break;
+                }
+            }
+        } else if index == 1 {
+            let delta = inter(current_solution, i, j, distance_matrix, data);
+            if delta < best_delta {
+                let mut new_solution = current_solution.clone();
+                new_solution[i] = j;
+                (best_delta, best_solution) = (delta, new_solution);
+                if greedy {
+                    break;
+                }
             }
         }
     }
-    (best_solution, best_score)
+    (best_solution, best_delta)
 }
 
 pub fn local_search(
@@ -70,18 +146,21 @@ pub fn local_search(
     initial_solution: Vec<usize>,
     distance_matrix: &Array2<f64>,
     greedy: bool,
+    change_edges: bool,
 ) -> Vec<usize> {
     let mut current_solution = initial_solution.clone();
-    let mut current_score = check_solution(&current_solution, data, distance_matrix);
-    let mut better_solution_found: bool = true;
-    while better_solution_found {
-        let (solution, best_score) =
-            search_neighborhood(&current_solution, data, distance_matrix, greedy);
-
-        if best_score < current_score {
-            (current_solution, current_score) = (solution.clone(), best_score);
+    loop {
+        let (solution, best_delta) = search_neighborhood(
+            &current_solution,
+            data,
+            distance_matrix,
+            greedy,
+            change_edges,
+        );
+        if best_delta < 0.0 {
+            current_solution = solution;
         } else {
-            better_solution_found = false;
+            break;
         }
     }
     current_solution
