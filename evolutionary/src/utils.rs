@@ -5,7 +5,9 @@ use pyo3::{pyclass, pymethods};
 use rand::prelude::*;
 use rayon::iter::IntoParallelRefIterator;
 use rayon::prelude::*;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::fs;
 use std::fs::File;
 use std::io::Write;
 use std::str::FromStr;
@@ -20,14 +22,14 @@ pub struct DataPoint {
 }
 
 #[pyclass]
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Metrics {
     #[pyo3(get, set)]
     pub name: String,
     #[pyo3(get, set)]
     pub scores: Vec<f64>,
     #[pyo3(get, set)]
-    pub total_time: f64,
+    pub times: Vec<f64>,
     #[pyo3(get, set)]
     pub best_solution: Vec<usize>,
 }
@@ -35,11 +37,11 @@ pub struct Metrics {
 #[pymethods]
 impl Metrics {
     #[new]
-    fn new(name: String, scores: Vec<f64>, total_time: f64, best_solution: Vec<usize>) -> Self {
+    fn new(name: String, scores: Vec<f64>, times: Vec<f64>, best_solution: Vec<usize>) -> Self {
         Self {
             name,
             scores,
-            total_time,
+            times,
             best_solution,
         }
     }
@@ -114,11 +116,11 @@ pub fn benchmark_function(
     let mut best_solution_score: f64 = f64::INFINITY;
     let mut best_solution: Vec<usize> = vec![];
 
-    let mut total_time = 0.0;
+    let mut times = vec![];
     for i in 0..data.len() {
         let start_time = Instant::now();
         let solution = f(data, i, distance_matrix);
-        total_time += start_time.elapsed().as_secs_f64();
+        times.push(start_time.elapsed().as_secs_f64());
         let solution_score = check_solution(&solution, data, distance_matrix);
         scores.push(solution_score);
         if solution_score < best_solution_score {
@@ -130,7 +132,7 @@ pub fn benchmark_function(
     Metrics {
         name,
         scores,
-        total_time,
+        times,
         best_solution,
     }
 }
@@ -142,12 +144,11 @@ pub fn benchmark_function_mc(
     name: &str,
 ) -> Metrics {
     let mut scores: Vec<f64> = vec![];
+    let mut times: Vec<f64> = vec![];
     let mut best_solution_score: f64 = f64::INFINITY;
     let mut best_solution: Vec<usize> = vec![];
 
-    let mut total_time = 0.0;
-
-    let a: Vec<(f64, f64, Vec<usize>)> = (0..data.len())
+    let results: Vec<(f64, f64, Vec<usize>)> = (0..data.len())
         .collect::<Vec<usize>>()
         .par_iter()
         .with_min_len(25)
@@ -162,9 +163,9 @@ pub fn benchmark_function_mc(
         })
         .collect();
 
-    for (score, time, solution) in a {
+    for (score, time, solution) in results {
         scores.push(score);
-        total_time += time;
+        times.push(time);
         if score < best_solution_score {
             best_solution_score = score;
             best_solution = solution;
@@ -174,7 +175,7 @@ pub fn benchmark_function_mc(
     Metrics {
         name,
         scores,
-        total_time,
+        times,
         best_solution,
     }
 }
@@ -200,16 +201,24 @@ pub fn run_benchmark_suite(
             results.push(benchmark_function(*function, data, distance_matrix, name));
         }
     }
-    let list_as_json = serde_json::to_string_pretty(&results).unwrap();
+    let mut old_json: HashMap<String, Metrics> = match fs::read_to_string("result.json") {
+        Ok(data) => serde_json::from_str(&data).unwrap_or_default(),
+        Err(_) => HashMap::new(),
+    };
+    let new_json: HashMap<String, &Metrics> = results.iter().map(|m| (m.name.clone(), m)).collect();
+    for (k, v) in new_json {
+        old_json.insert(k, v.clone());
+    }
+    let map_as_json = serde_json::to_string_pretty(&old_json).unwrap();
     let mut file = File::create("result.json").expect("Could not create file!");
 
-    file.write_all(list_as_json.as_bytes())
+    file.write_all(map_as_json.as_bytes())
         .expect("Cannot write to the file!");
     if results.is_empty() {
         results = vec![Metrics {
             name: "test".to_string(),
             scores: vec![1.1],
-            total_time: 1.1,
+            times: vec![1.1],
             best_solution: vec![1],
         }]
     }

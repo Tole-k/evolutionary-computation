@@ -7,6 +7,8 @@ use ndarray::Array2;
 use pyo3::prelude::*;
 use std::{collections::HashMap, time::Instant};
 
+use crate::utils::Metrics;
+
 fn get_map() -> HashMap<&'static str, fn(&Vec<utils::DataPoint>, usize, &Array2<f64>) -> Vec<usize>>
 {
     HashMap::from([
@@ -111,5 +113,6 @@ fn evolutionary(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(main, m)?)?;
     m.add_function(wrap_pyfunction!(main_mc, m)?)?;
     m.add_function(wrap_pyfunction!(complexity, m)?)?;
+    m.add_class::<Metrics>()?;
     Ok(())
 }
