@@ -6,9 +6,9 @@ mod regret_heuristics;
 mod utils;
 use ndarray::Array2;
 use pyo3::prelude::*;
-use std::{collections::HashMap, time::Instant};
+use std::{collections::HashMap, time::Instant, usize};
 
-use crate::utils::Metrics;
+use crate::{local_search_candidates::ls_candidate_faster, utils::Metrics};
 
 fn get_map() -> HashMap<&'static str, fn(&Vec<utils::DataPoint>, usize, &Array2<f64>) -> Vec<usize>>
 {
@@ -70,7 +70,9 @@ fn get_map() -> HashMap<&'static str, fn(&Vec<utils::DataPoint>, usize, &Array2<
             "ls_steepest_nodes_greedy",
             local_search::ls_steepest_nodes_greedy,
         ),
-        ("ls_candidate", local_search_candidates::ls_candidate),
+        ("ls_candidate_10", local_search_candidates::ls_candidate_10),
+        ("ls_candidate_25", local_search_candidates::ls_candidate_25),
+        ("ls_candidate_50", local_search_candidates::ls_candidate_50),
     ])
 }
 
@@ -157,12 +159,26 @@ fn solution_history(dataset: &str, name: &str, point: usize) -> Vec<Vec<usize>> 
     f(&data, point, &distance_matrix)
 }
 
+#[pyfunction]
+fn benchmark_candidates(dataset: &str, size: usize) -> utils::Metrics {
+    let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset}.csv"));
+    let distance_matrix = utils::calculate_distance_matrix(&data);
+    utils::benchmark_function_alpha(
+        ls_candidate_faster,
+        &data,
+        &distance_matrix,
+        "local_search_candidates",
+        size,
+    )
+}
+
 #[pymodule]
 fn evolutionary(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(main, m)?)?;
     m.add_function(wrap_pyfunction!(main_mc, m)?)?;
     m.add_function(wrap_pyfunction!(complexity, m)?)?;
     m.add_function(wrap_pyfunction!(solution_history, m)?)?;
+    m.add_function(wrap_pyfunction!(benchmark_candidates, m)?)?;
     m.add_class::<Metrics>()?;
     Ok(())
 }

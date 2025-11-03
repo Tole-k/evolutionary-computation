@@ -5,8 +5,13 @@ use std::collections::HashSet;
 
 use crate::utils::DataPoint;
 
-fn intra(solution: &Vec<usize>, i: usize, j: usize, distance_matrix: &Array2<f64>) -> f64 {
+pub fn intra(solution: &Vec<usize>, i: usize, j: usize, distance_matrix: &Array2<f64>) -> f64 {
     let n = solution.len();
+    if i == j {
+        return 0.0;
+    }
+
+    let (i, j) = if i < j { (i, j) } else { (j, i) };
     if i + 1 == j {
         return -distance_matrix[[solution[(i - 1 + n) % n], solution[i]]]
             - distance_matrix[[solution[j], solution[(j + 1) % n]]]
@@ -29,7 +34,12 @@ fn intra(solution: &Vec<usize>, i: usize, j: usize, distance_matrix: &Array2<f64
     }
 }
 
-fn intra_edges(solution: &Vec<usize>, i: usize, j: usize, distance_matrix: &Array2<f64>) -> f64 {
+pub fn intra_edges(
+    solution: &Vec<usize>,
+    i: usize,
+    j: usize,
+    distance_matrix: &Array2<f64>,
+) -> f64 {
     let n = solution.len();
     let (mut a, mut b) = (i, j);
     if (j + 1) % n == i {
@@ -42,7 +52,7 @@ fn intra_edges(solution: &Vec<usize>, i: usize, j: usize, distance_matrix: &Arra
         + distance_matrix[[solution[a], solution[(b + 1) % n]]];
 }
 
-fn inter(
+pub fn inter(
     solution: &Vec<usize>,
     i: usize,
     j: usize,
