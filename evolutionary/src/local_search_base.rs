@@ -40,6 +40,10 @@ pub fn intra_edges(
     j: usize,
     distance_matrix: &Array2<f64>,
 ) -> f64 {
+    if i == j {
+        return 0.0;
+    }
+    let (i, j) = if i < j { (i, j) } else { (j, i) };
     let n = solution.len();
     let (mut a, mut b) = (i, j);
     if (j + 1) % n == i {

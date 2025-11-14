@@ -1,5 +1,7 @@
+import streamlit as st
 from components import algorithm_comparison_page
-from utils import Algorithm
+from utils import Algorithm, dill_cache
+import evolutionary
 from pages.local import ALGORITHMS as local_algorithms
 
 INITIAL_RANDOM = r"""
@@ -122,10 +124,69 @@ ALGORITHMS = [
         "ls_candidate_50",
         "",
     ),
+# ] + [
+#     Algorithm(
+#         "LS Candidate 10 Edge",
+#         "ls_candidate_10_edge",
+#         "",
+# ),    Algorithm(
+#         "LS Candidate 25 Edge",
+#         "ls_candidate_25_edge",
+#         "",
+# ),    Algorithm(
+#         "LS Candidate 50 Edge",
+#         "ls_candidate_50_edge",
+#         "",
+#     ),
 ]
 
 
+
+
 if __name__ == "__main__":
+
+    @dill_cache(f"{st.session_state['tsp_version']}-candidates")
+    def get_candidates_metrics():
+        metrics = [
+            (
+                evolutionary.benchmark_candidates(
+                    st.session_state["tsp_version"].replace(" ", ""), i
+                ),
+                print("Done"),
+            )[0]
+            for i in range(1, 50)
+        ]
+        scores = [metric.scores for metric in metrics]
+        times = [metric.times for metric in metrics]
+        return scores, times
+
     algorithm_comparison_page(
-        ALGORITHMS + [local_algorithms[2], local_algorithms[6], local_algorithms[7]], "Local Search Candidates", conclusions=CONCLUSIONS
+        ALGORITHMS + [local_algorithms[2], local_algorithms[6], local_algorithms[7]],
+        "Local Search Candidates",
+        conclusions=CONCLUSIONS,
+    )
+    metric = evolutionary.main(
+        st.session_state["tsp_version"].replace(" ", ""), ["ls_steepest_nodes_random"]
+    )[0]
+    scores, times = get_candidates_metrics()
+    col1, col2 = st.columns(2)
+    s_time = sum(metric.times) / 200
+    s_score = sum(metric.scores) / 200
+    col1.subheader("Time")
+    col1.line_chart(
+        {
+            "local_search_candidates": [sum(time) / 200 for time in times],
+            "local_search": [s_time for _ in times],
+        },
+        x_label="number of candidates",
+        y_label="time",
+    )
+    col2.subheader("Score")
+    col2.line_chart(
+        {
+            "local_search_candidates": [sum(score) / 200 for score in scores],
+            "local_search": [s_score for _ in times],
+        },
+        x_label="number of candidates",
+        y_label="score",
     )

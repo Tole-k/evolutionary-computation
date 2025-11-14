@@ -73,6 +73,18 @@ fn get_map() -> HashMap<&'static str, fn(&Vec<utils::DataPoint>, usize, &Array2<
         ("ls_candidate_10", local_search_candidates::ls_candidate_10),
         ("ls_candidate_25", local_search_candidates::ls_candidate_25),
         ("ls_candidate_50", local_search_candidates::ls_candidate_50),
+        (
+            "ls_candidate_10_edge",
+            local_search_candidates::ls_candidate_10_edge,
+        ),
+        (
+            "ls_candidate_25_edge",
+            local_search_candidates::ls_candidate_25_edge,
+        ),
+        (
+            "ls_candidate_50_edge",
+            local_search_candidates::ls_candidate_50_edge,
+        ),
     ])
 }
 
@@ -111,6 +123,18 @@ fn map_full()
         (
             "ls_steepest_nodes_greedy",
             local_search::ls_steepest_nodes_greedy_full,
+        ),
+        (
+            "ls_candidate_10",
+            local_search_candidates::ls_candidate_10_full,
+        ),
+        (
+            "ls_candidate_25",
+            local_search_candidates::ls_candidate_25_full,
+        ),
+        (
+            "ls_candidate_50",
+            local_search_candidates::ls_candidate_50_full,
         ),
     ])
 }

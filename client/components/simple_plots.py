@@ -19,7 +19,7 @@ def comparison_plots(df, times):
     with col2:
         fig = px.bar(
             pd.DataFrame({name: [time] for name, time in times.items()}).T,
-            labels={"index": "", "value": "Processing time [s] (200 runs)"},
+            labels={"index": "", "value": "Processing time [s]"},
         )
         fig.update_layout(
             paper_bgcolor="rgba(0,0,0,0)",
