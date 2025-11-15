@@ -66,7 +66,6 @@ impl Move for MoveType {
 fn apply_if_valid(
     current_solution: &Vec<usize>,
     stored_moves: &mut Vec<MoveType>,
-    lm: &mut BinaryHeap<Reverse<MoveType>>,
     mv: MoveType,
 ) -> Option<(f64, Vec<usize>)> {
     match mv {
@@ -74,7 +73,7 @@ fn apply_if_valid(
             delta,
             edge1,
             edge2,
-        }) => match case_intra_edges(current_solution, mv, delta, edge1, edge2, stored_moves, lm) {
+        }) => match case_intra_edges(current_solution, mv, delta, edge1, edge2, stored_moves) {
             None => return None,
             Some(value) => return Some(value),
         },
@@ -88,8 +87,6 @@ fn apply_if_valid(
                 delta,
                 node1_w_neighbors,
                 node2_w_neighbors,
-                stored_moves,
-                lm,
             ) {
                 None => return None,
                 Some(value) => return Some(value),
@@ -104,8 +101,6 @@ fn apply_if_valid(
             delta,
             node1_w_neighbors,
             outside_node,
-            stored_moves,
-            lm,
         ) {
             None => return None,
             Some(value) => return Some(value),
@@ -118,8 +113,6 @@ fn case_inter_nodes(
     delta: f64,
     node1_w_neighbors: [usize; 3],
     outside_node: usize,
-    stored_moves: &mut Vec<MoveType>,
-    lm: &mut BinaryHeap<Reverse<MoveType>>,
 ) -> Option<(f64, Vec<usize>)> {
     let [prev_node1, node1, node1_next] = node1_w_neighbors;
     let node1_position: usize;
@@ -158,7 +151,6 @@ fn case_inter_nodes(
     if prev_node1_position + 1 == node1_position && node1_position == node1_next_position - 1 {
         let mut new_solution = current_solution.clone();
         new_solution[node1_position] = outside_node;
-        recover_stored_moves(lm, stored_moves);
         return Some((delta, new_solution));
     } else {
         return None;
@@ -170,8 +162,6 @@ fn case_intra_nodes(
     delta: f64,
     node1_w_neighbors: [usize; 3],
     node2_w_neighbors: [usize; 3],
-    stored_moves: &mut Vec<MoveType>,
-    lm: &mut BinaryHeap<Reverse<MoveType>>,
 ) -> Option<(f64, Vec<usize>)> {
     let [prev_node1, node1, node1_next] = node1_w_neighbors;
     let [prev_node2, node2, node2_next] = node2_w_neighbors;
@@ -234,7 +224,6 @@ fn case_intra_nodes(
     {
         let mut new_solution = current_solution.clone();
         new_solution.swap(node1_position, node2_position);
-        recover_stored_moves(lm, stored_moves);
         return Some((delta, new_solution));
     } else {
         return None;
@@ -248,7 +237,6 @@ fn case_intra_edges(
     edge1: [usize; 2],
     edge2: [usize; 2],
     stored_moves: &mut Vec<MoveType>,
-    lm: &mut BinaryHeap<Reverse<MoveType>>,
 ) -> Option<(f64, Vec<usize>)> {
     let [prev_node1, node1] = edge1;
     let [node2, node2_next] = edge2;
@@ -286,7 +274,6 @@ fn case_intra_edges(
         let mut new_solution = current_solution.clone();
         let sub_slice = &mut new_solution[node1_position..=node2_position];
         sub_slice.reverse();
-        recover_stored_moves(lm, stored_moves);
         return Some((delta, new_solution));
     } else if (prev_node1_position - 1 == node1_position
         && node2_position + 1 == node2_next_position)
@@ -392,6 +379,13 @@ fn add_inter_node_move(
     lm.push(Reverse(MoveType::InterNode(inter_node_move)));
 }
 
+fn recover_stored_moves(lm: &mut BinaryHeap<Reverse<MoveType>>, stored_moves: &mut Vec<MoveType>) {
+    for mv in &mut *stored_moves {
+        lm.push(Reverse(mv.clone()));
+    }
+    stored_moves.clear();
+}
+
 pub fn local_search_w_cached_deltas(
     data: &Vec<DataPoint>,
     starting_point_index: usize,
@@ -415,7 +409,7 @@ pub fn local_search_w_cached_deltas(
 
         while !lm.is_empty() {
             let Reverse(mv) = lm.pop().unwrap();
-            match apply_if_valid(&current_solution, &mut stored_moves, &mut lm, mv) {
+            match apply_if_valid(&current_solution, &mut stored_moves, mv) {
                 None => {}
                 Some((delta, new_solution)) => {
                     best_delta = delta;
@@ -424,6 +418,7 @@ pub fn local_search_w_cached_deltas(
                 }
             }
         }
+        recover_stored_moves(&mut lm, &mut stored_moves);
         if best_delta < 0. {
             current_solution = best_solution;
         } else {
@@ -431,13 +426,6 @@ pub fn local_search_w_cached_deltas(
         }
     }
     current_solution
-}
-
-fn recover_stored_moves(lm: &mut BinaryHeap<Reverse<MoveType>>, stored_moves: &mut Vec<MoveType>) {
-    for mv in &mut *stored_moves {
-        lm.push(Reverse(mv.clone()));
-    }
-    stored_moves.clear();
 }
 
 pub fn local_search_w_cached_deltas_full(
