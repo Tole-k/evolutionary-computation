@@ -2,6 +2,8 @@ mod greedy_algorithms;
 mod local_search;
 mod local_search_base;
 mod regret_heuristics;
+mod cached_deltas;
+mod cached_deltas_base;
 mod utils;
 use ndarray::Array2;
 use pyo3::prelude::*;
@@ -69,6 +71,14 @@ fn get_map() -> HashMap<&'static str, fn(&Vec<utils::DataPoint>, usize, &Array2<
             "ls_steepest_nodes_greedy",
             local_search::ls_steepest_nodes_greedy,
         ),
+        (
+            "ls_cached_deltas_edges",
+            cached_deltas::ls_cached_deltas_edges,
+        ),
+        (
+            "ls_cached_deltas_nodes",
+            cached_deltas::ls_cached_deltas_nodes,
+        )
     ])
 }
 
@@ -108,6 +118,14 @@ fn map_full()
             "ls_steepest_nodes_greedy",
             local_search::ls_steepest_nodes_greedy_full,
         ),
+        (
+            "ls_cached_deltas_edges",
+            cached_deltas::ls_cached_deltas_edges_full,
+        ),
+        (
+            "ls_cached_deltas_nodes",
+            cached_deltas::ls_cached_deltas_nodes_full,
+        )
     ])
 }
 

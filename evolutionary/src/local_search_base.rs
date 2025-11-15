@@ -5,7 +5,7 @@ use std::collections::HashSet;
 
 use crate::utils::DataPoint;
 
-fn intra(solution: &Vec<usize>, i: usize, j: usize, distance_matrix: &Array2<f64>) -> f64 {
+pub fn intra(solution: &Vec<usize>, i: usize, j: usize, distance_matrix: &Array2<f64>) -> f64 {
     let n = solution.len();
     if i + 1 == j {
         return -distance_matrix[[solution[(i - 1 + n) % n], solution[i]]]
@@ -29,7 +29,7 @@ fn intra(solution: &Vec<usize>, i: usize, j: usize, distance_matrix: &Array2<f64
     }
 }
 
-fn intra_edges(solution: &Vec<usize>, i: usize, j: usize, distance_matrix: &Array2<f64>) -> f64 {
+pub fn intra_edges(solution: &Vec<usize>, i: usize, j: usize, distance_matrix: &Array2<f64>) -> f64 {
     let n = solution.len();
     let (mut a, mut b) = (i, j);
     if (j + 1) % n == i {
@@ -42,7 +42,7 @@ fn intra_edges(solution: &Vec<usize>, i: usize, j: usize, distance_matrix: &Arra
         + distance_matrix[[solution[a], solution[(b + 1) % n]]];
 }
 
-fn inter(
+pub fn inter(
     solution: &Vec<usize>,
     i: usize,
     j: usize,
@@ -58,7 +58,7 @@ fn inter(
         + data[j].cost as f64;
 }
 
-fn generate_neighborhood(
+pub fn generate_neighborhood(
     current_solution: &Vec<usize>,
     _data: &Vec<DataPoint>,
 ) -> Vec<(usize, usize, usize)> {
@@ -85,7 +85,7 @@ fn generate_neighborhood(
     solutions
 }
 
-fn search_neighborhood(
+pub fn search_neighborhood(
     current_solution: &Vec<usize>,
     data: &Vec<DataPoint>,
     distance_matrix: &Array2<f64>,
