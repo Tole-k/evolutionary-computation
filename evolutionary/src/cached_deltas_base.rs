@@ -453,7 +453,7 @@ pub fn local_search_w_cached_deltas_full(
 
         while !lm.is_empty() {
             let Reverse(mv) = lm.pop().unwrap();
-            match apply_if_valid(&current_solution, &mut stored_moves, &mut lm, mv) {
+            match apply_if_valid(&current_solution, &mut stored_moves, mv) {
                 None => {}
                 Some((delta, new_solution)) => {
                     best_delta = delta;
