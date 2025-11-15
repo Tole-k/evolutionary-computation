@@ -462,16 +462,13 @@ pub fn local_search_w_cached_deltas_full(
                 }
             }
         }
+        recover_stored_moves(&mut lm, &mut stored_moves);
         if best_delta < 0. {
             full_solution.push(best_solution.clone());
             current_solution = best_solution;
         } else {
             break;
         }
-        for mv in &stored_moves {
-            lm.push(Reverse(mv.clone()));
-        }
-        stored_moves.clear();
     }
     full_solution
 }
