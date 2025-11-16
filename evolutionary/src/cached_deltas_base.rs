@@ -12,20 +12,28 @@ trait Move {
 #[derive(Clone)]
 struct IntraEdgeMove {
     delta: f64,
-    edge1: [usize; 2],
-    edge2: [usize; 2],
+    edge1_first_node: usize,
+    edge1_second_node: usize,
+    edge2_first_node: usize,
+    edge2_second_node: usize,
 }
 #[derive(Clone)]
 struct IntraNodeMove {
     delta: f64,
-    node1_w_neighbors: [usize; 3],
-    node2_w_neighbors: [usize; 3],
+    before_node1: usize,
+    node1: usize,
+    after_node1: usize,
+    before_node2: usize,
+    node2: usize,
+    after_node2: usize,
 }
 
 #[derive(Clone)]
 struct InterNodeMove {
     delta: f64,
-    node1_w_neighbors: [usize; 3],
+    before_node1: usize,
+    node1: usize,
+    after_node1: usize,
     outside_node: usize,
 }
 #[derive(Clone)]
@@ -90,13 +98,14 @@ fn case_inter_nodes(
 ) -> Option<(Vec<usize>, InterNodeMove)> {
     let InterNodeMove {
         delta,
-        node1_w_neighbors,
+        before_node1,
+        node1,
+        after_node1,
         outside_node,
     } = mv;
-    let [prev_node1, node1, node1_next] = node1_w_neighbors;
     let node1_position: usize;
-    let prev_node1_position: usize;
-    let node1_next_position: usize;
+    let before_node1_position: usize;
+    let after_node1_position: usize;
     let n = current_solution.len();
     match current_solution.iter().position(|x| *x == node1) {
         None => {
@@ -106,20 +115,20 @@ fn case_inter_nodes(
             node1_position = position;
         }
     }
-    match current_solution.iter().position(|x| *x == prev_node1) {
+    match current_solution.iter().position(|x| *x == before_node1) {
         None => {
             return None;
         }
         Some(position) => {
-            prev_node1_position = position;
+            before_node1_position = position;
         }
     }
-    match current_solution.iter().position(|x| *x == node1_next) {
+    match current_solution.iter().position(|x| *x == after_node1) {
         None => {
             return None;
         }
         Some(position) => {
-            node1_next_position = position;
+            after_node1_position = position;
         }
     }
     match current_solution.iter().position(|x| *x == outside_node) {
@@ -128,8 +137,8 @@ fn case_inter_nodes(
             return None;
         }
     }
-    if (prev_node1_position + 1) % n == node1_position
-        && node1_position == (node1_next_position + n - 1) % n
+    if (before_node1_position + 1) % n == node1_position
+        && node1_position == (after_node1_position + n - 1) % n
     {
         let mut new_solution = current_solution.clone();
         new_solution[node1_position] = outside_node;
@@ -137,7 +146,9 @@ fn case_inter_nodes(
             new_solution,
             InterNodeMove {
                 delta,
-                node1_w_neighbors: [prev_node1_position, node1_position, node1_next_position],
+                before_node1: before_node1_position,
+                node1: node1_position,
+                after_node1: after_node1_position,
                 outside_node,
             },
         ));
@@ -152,17 +163,19 @@ fn case_intra_nodes(
 ) -> Option<(Vec<usize>, IntraNodeMove)> {
     let IntraNodeMove {
         delta,
-        node1_w_neighbors,
-        node2_w_neighbors,
+        before_node1,
+        node1,
+        after_node1,
+        before_node2,
+        node2,
+        after_node2,
     } = mv;
-    let [prev_node1, node1, node1_next] = node1_w_neighbors;
-    let [prev_node2, node2, node2_next] = node2_w_neighbors;
     let node1_position: usize;
-    let prev_node1_position: usize;
-    let node1_next_position: usize;
-    let prev_node2_position: usize;
+    let before_node1_position: usize;
+    let after_node1_position: usize;
+    let before_node2_position: usize;
     let node2_position: usize;
-    let node2_next_position: usize;
+    let after_node2_position: usize;
     let n = current_solution.len();
     match current_solution.iter().position(|x| *x == node1) {
         None => {
@@ -172,20 +185,20 @@ fn case_intra_nodes(
             node1_position = position;
         }
     }
-    match current_solution.iter().position(|x| *x == prev_node1) {
+    match current_solution.iter().position(|x| *x == before_node1) {
         None => {
             return None;
         }
         Some(position) => {
-            prev_node1_position = position;
+            before_node1_position = position;
         }
     }
-    match current_solution.iter().position(|x| *x == node1_next) {
+    match current_solution.iter().position(|x| *x == after_node1) {
         None => {
             return None;
         }
         Some(position) => {
-            node1_next_position = position;
+            after_node1_position = position;
         }
     }
     match current_solution.iter().position(|x| *x == node2) {
@@ -196,26 +209,26 @@ fn case_intra_nodes(
             node2_position = position;
         }
     }
-    match current_solution.iter().position(|x| *x == prev_node2) {
+    match current_solution.iter().position(|x| *x == before_node2) {
         None => {
             return None;
         }
         Some(position) => {
-            prev_node2_position = position;
+            before_node2_position = position;
         }
     }
-    match current_solution.iter().position(|x| *x == node2_next) {
+    match current_solution.iter().position(|x| *x == after_node2) {
         None => {
             return None;
         }
         Some(position) => {
-            node2_next_position = position;
+            after_node2_position = position;
         }
     }
-    if (prev_node1_position + 1) % n == node1_position
-        && node1_position == (node1_next_position + n - 1) % n
-        && (prev_node2_position + 1) % n == node2_position
-        && node2_position == (node2_next_position + n - 1) % n
+    if (before_node1_position + 1) % n == node1_position
+        && node1_position == (after_node1_position + n - 1) % n
+        && (before_node2_position + 1) % n == node2_position
+        && node2_position == (after_node2_position + n - 1) % n
     {
         let mut new_solution = current_solution.clone();
         new_solution.swap(node1_position, node2_position);
@@ -223,8 +236,12 @@ fn case_intra_nodes(
             new_solution,
             IntraNodeMove {
                 delta,
-                node1_w_neighbors: [prev_node1_position, node1_position, node1_next_position],
-                node2_w_neighbors: [prev_node2_position, node2_position, node2_next_position],
+                before_node1: before_node1_position,
+                node1: node1_position,
+                after_node1: after_node1_position,
+                before_node2: before_node2_position,
+                node2: node2_position,
+                after_node2: after_node2_position,
             },
         ));
     } else {
@@ -239,64 +256,72 @@ fn case_intra_edges(
 ) -> Option<(Vec<usize>, IntraEdgeMove)> {
     let IntraEdgeMove {
         delta,
-        edge1,
-        edge2,
+        edge1_first_node,
+        edge1_second_node,
+        edge2_first_node,
+        edge2_second_node,
     } = mv;
-    let [prev_node1, node1] = edge1;
-    let [node2, node2_next] = edge2;
-    let node1_position: usize;
-    let prev_node1_position: usize;
-    let node2_position: usize;
-    let node2_next_position: usize;
+    let edge1_first_node_position: usize;
+    let edge1_second_node_position: usize;
+    let edge2_first_node_position: usize;
+    let edge2_second_node_position: usize;
     let n = current_solution.len();
-    match current_solution.iter().position(|x| *x == node1) {
+    match current_solution.iter().position(|x| *x == edge1_first_node) {
         None => return None,
         Some(position) => {
-            node1_position = position;
+            edge1_first_node_position = position;
         }
     }
-    match current_solution.iter().position(|x| *x == prev_node1) {
+    match current_solution
+        .iter()
+        .position(|x| *x == edge1_second_node)
+    {
         None => return None,
         Some(position) => {
-            prev_node1_position = position;
+            edge1_second_node_position = position;
         }
     }
-    match current_solution.iter().position(|x| *x == node2) {
+    match current_solution.iter().position(|x| *x == edge2_first_node) {
         None => return None,
         Some(position) => {
-            node2_position = position;
+            edge2_first_node_position = position;
         }
     }
-    match current_solution.iter().position(|x| *x == node2_next) {
+    match current_solution
+        .iter()
+        .position(|x| *x == edge2_second_node)
+    {
         None => return None,
         Some(position) => {
-            node2_next_position = position;
+            edge2_second_node_position = position;
         }
     }
-    if ((prev_node1_position + 1) % n == node1_position
-        && (node2_position + 1) % n == node2_next_position)
-        || ((prev_node1_position + n - 1) % n == node1_position
-            && (node2_position + n - 1) % n == node2_next_position)
+    if ((edge1_first_node_position + 1) % n == edge1_second_node_position
+        && (edge2_first_node_position + 1) % n == edge2_second_node_position)
+        || ((edge1_first_node_position + n - 1) % n == edge1_second_node_position
+            && (edge2_first_node_position + n - 1) % n == edge2_second_node_position)
     {
         let mut new_solution = current_solution.clone();
-        let sub_slice = if node1_position < node2_position {
-            &mut new_solution[node1_position..=node2_position]
+        let sub_slice = if edge1_second_node_position < edge2_first_node_position {
+            &mut new_solution[edge1_second_node_position..=edge2_first_node_position]
         } else {
-            &mut new_solution[node2_position..=node1_position]
+            &mut new_solution[edge2_first_node_position..=edge1_second_node_position]
         };
         sub_slice.reverse();
         return Some((
             new_solution,
             IntraEdgeMove {
                 delta,
-                edge1: [prev_node1_position, node1_position],
-                edge2: [node2_position, node2_next_position],
+                edge1_first_node: edge1_first_node_position,
+                edge1_second_node: edge1_second_node_position,
+                edge2_first_node: edge2_first_node_position,
+                edge2_second_node: edge2_second_node_position,
             },
         ));
-    } else if ((prev_node1_position + n - 1) % n == node1_position
-        && (node2_position + 1) % n == node2_next_position)
-        || ((prev_node1_position + 1) % n == node1_position
-            && (node2_position + n - 1) % n == node2_next_position)
+    } else if ((edge1_first_node_position + 1) % n == edge1_second_node_position
+        && (edge2_first_node_position - 1) % n == edge2_second_node_position)
+        || ((edge1_first_node_position + n - 1) % n == edge1_second_node_position
+            && (edge2_first_node_position + n + 1) % n == edge2_second_node_position)
     {
         stored_moves.push(MoveType::IntraEdge(mv));
         return None;
@@ -349,8 +374,10 @@ fn add_intra_edge_move(
     let node2_next = current_solution[(b + 1) % n];
     let intra_edge_move = IntraEdgeMove {
         delta,
-        edge1: [prev_node1, node1],
-        edge2: [node2, node2_next],
+        edge1_first_node: prev_node1,
+        edge1_second_node: node1,
+        edge2_first_node: node2,
+        edge2_second_node: node2_next,
     };
     lm.push(Reverse(MoveType::IntraEdge(intra_edge_move)));
 }
@@ -374,8 +401,12 @@ fn add_intra_node_move(
     let node2_next = current_solution[(j + 1) % n];
     let intra_node_move = IntraNodeMove {
         delta,
-        node1_w_neighbors: [prev_node1, node1, node1_next],
-        node2_w_neighbors: [prev_node2, node2, node2_next],
+        before_node1: prev_node1,
+        node1,
+        after_node1: node1_next,
+        before_node2: prev_node2,
+        node2,
+        after_node2: node2_next,
     };
     lm.push(Reverse(MoveType::IntraNode(intra_node_move)));
 }
@@ -397,7 +428,9 @@ fn add_inter_node_move(
     let node1_next = current_solution[(i + 1) % n];
     let inter_node_move = InterNodeMove {
         delta,
-        node1_w_neighbors: [prev_node1, node1, node1_next],
+        before_node1: prev_node1,
+        node1,
+        after_node1: node1_next,
         outside_node: j,
     };
     lm.push(Reverse(MoveType::InterNode(inter_node_move)));
@@ -435,11 +468,7 @@ fn add_intra_edge_moves(
         if i == j {
             continue;
         }
-        let (a,b) = if j< i {
-            (j,i)
-        } else {
-            (i,j)
-        };
+        let (a, b) = if j < i { (j, i) } else { (i, j) };
         add_intra_edge_move(distance_matrix, lm, solution, a, b);
     }
 }
@@ -454,11 +483,7 @@ fn add_intra_node_moves(
         if i == j {
             continue;
         }
-        let (a,b) = if j< i {
-            (j,i)
-        } else {
-            (i,j)
-        };
+        let (a, b) = if j < i { (j, i) } else { (i, j) };
         add_intra_node_move(distance_matrix, lm, solution, a, b);
     }
 }
@@ -472,12 +497,14 @@ fn add_new_moves(
 ) {
     match bm {
         MoveType::IntraEdge(mv) => {
-            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.edge1[0]);
-            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.edge1[1]);
-            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.edge2[0]);
-            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.edge2[1]);
-            add_intra_edge_moves(distance_matrix, lm, best_solution, mv.edge1[1]);
-            add_intra_edge_moves(distance_matrix, lm, best_solution, mv.edge2[1]);
+            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.edge1_first_node);
+            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.edge1_second_node);
+            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.edge2_first_node);
+            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.edge2_second_node);
+            add_intra_edge_moves(distance_matrix, lm, best_solution, mv.edge1_first_node);
+            add_intra_edge_moves(distance_matrix, lm, best_solution, mv.edge1_second_node);
+            add_intra_edge_moves(distance_matrix, lm, best_solution, mv.edge2_first_node);
+            add_intra_edge_moves(distance_matrix, lm, best_solution, mv.edge2_second_node);
         }
         MoveType::IntraNode(mv) => {
             add_inter_node_moves(
@@ -485,18 +512,18 @@ fn add_new_moves(
                 distance_matrix,
                 lm,
                 best_solution,
-                mv.node1_w_neighbors[1],
+                mv.node1,
             );
             add_inter_node_moves(
                 data,
                 distance_matrix,
                 lm,
                 best_solution,
-                mv.node2_w_neighbors[1],
+                mv.node2,
             );
 
-            add_intra_node_moves(distance_matrix, lm, best_solution, mv.node1_w_neighbors[1]);
-            add_intra_node_moves(distance_matrix, lm, best_solution, mv.node2_w_neighbors[1]);
+            add_intra_node_moves(distance_matrix, lm, best_solution, mv.node1);
+            add_intra_node_moves(distance_matrix, lm, best_solution, mv.node2);
         }
         MoveType::InterNode(mv) => {
             add_inter_node_moves(
@@ -504,13 +531,14 @@ fn add_new_moves(
                 distance_matrix,
                 lm,
                 best_solution,
-                mv.node1_w_neighbors[1],
+                mv.node1,
             );
             if change_edges {
-                add_intra_edge_moves(distance_matrix, lm, best_solution, mv.node1_w_neighbors[2]);
-                add_intra_edge_moves(distance_matrix, lm, best_solution, mv.node1_w_neighbors[1]);
+                add_intra_edge_moves(distance_matrix, lm, best_solution, mv.before_node1);
+                add_intra_edge_moves(distance_matrix, lm, best_solution, mv.node1);
+                add_intra_edge_moves(distance_matrix, lm, best_solution, mv.after_node1);
             } else {
-                add_intra_node_moves(distance_matrix, lm, best_solution, mv.node1_w_neighbors[2]);
+                add_intra_node_moves(distance_matrix, lm, best_solution, mv.after_node1);
             }
         }
     }
