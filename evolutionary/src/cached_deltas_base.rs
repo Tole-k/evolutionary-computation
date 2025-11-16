@@ -1,6 +1,6 @@
 use crate::local_search_base::{generate_neighborhood, inter, intra, intra_edges};
 use crate::utils::DataPoint;
-use crate::utils::{generate_random_solution, check_solution};
+use crate::utils::generate_random_solution;
 use ndarray::Array2;
 use std::cmp::Ordering;
 use std::cmp::Reverse;
@@ -435,7 +435,12 @@ fn add_intra_edge_moves(
         if i == j {
             continue;
         }
-        add_intra_edge_move(distance_matrix, lm, solution, i, j);
+        let (a,b) = if j< i {
+            (j,i)
+        } else {
+            (i,j)
+        };
+        add_intra_edge_move(distance_matrix, lm, solution, a, b);
     }
 }
 
@@ -449,7 +454,12 @@ fn add_intra_node_moves(
         if i == j {
             continue;
         }
-        add_intra_node_move(distance_matrix, lm, solution, i, j);
+        let (a,b) = if j< i {
+            (j,i)
+        } else {
+            (i,j)
+        };
+        add_intra_node_move(distance_matrix, lm, solution, a, b);
     }
 }
 fn add_new_moves(
@@ -543,7 +553,6 @@ pub fn local_search_w_cached_deltas(
         if let Some(_delta) = best_delta {
             recover_stored_moves(&mut lm, &mut stored_moves);
             if let Some(bm) = best_move {
-                // add_all_moves(data, distance_matrix, &mut lm, &current_solution, change_edges);
                 add_new_moves(
                     data,
                     distance_matrix,
@@ -553,7 +562,6 @@ pub fn local_search_w_cached_deltas(
                     bm,
                 );
                 current_solution = best_solution;
-                // println!("{}", check_solution(&current_solution,data, distance_matrix));
             }
         } else {
             break;
