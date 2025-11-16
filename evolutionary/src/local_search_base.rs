@@ -40,19 +40,22 @@ pub fn intra_edges(
     j: usize,
     distance_matrix: &Array2<f64>,
 ) -> f64 {
+    let n = solution.len();
     if i == j {
         return 0.0;
     }
     let (i, j) = if i < j { (i, j) } else { (j, i) };
-    let n = solution.len();
     let (mut a, mut b) = (i, j);
+    if a == 0 && b == n - 1 {
+        return 0.0;
+    }
     if (j + 1) % n == i {
         a = j;
         b = i;
     }
     return -distance_matrix[[solution[(a - 1 + n) % n], solution[a]]]
-        - distance_matrix[[solution[b], solution[(b + 1) % n]]]
         + distance_matrix[[solution[(a - 1 + n) % n], solution[b]]]
+        - distance_matrix[[solution[b], solution[(b + 1) % n]]]
         + distance_matrix[[solution[a], solution[(b + 1) % n]]];
 }
 
@@ -116,9 +119,6 @@ fn search_neighborhood(
                 let sub_slice = &mut new_solution[i..=j];
                 sub_slice.reverse();
                 (best_delta, best_solution) = (delta, new_solution);
-                if greedy {
-                    break;
-                }
             }
         } else if index == 1 && change_edges {
             let delta = inter(current_solution, i, j, distance_matrix, data);
@@ -126,9 +126,6 @@ fn search_neighborhood(
                 let mut new_solution = current_solution.clone();
                 new_solution[i] = j;
                 (best_delta, best_solution) = (delta, new_solution);
-                if greedy {
-                    break;
-                }
             }
         } else if index == 0 {
             let delta = intra(current_solution, i, j, distance_matrix);
@@ -136,9 +133,6 @@ fn search_neighborhood(
                 let mut new_solution = current_solution.clone();
                 new_solution.swap(i, j);
                 (best_delta, best_solution) = (delta, new_solution);
-                if greedy {
-                    break;
-                }
             }
         } else if index == 1 {
             let delta = inter(current_solution, i, j, distance_matrix, data);
@@ -146,9 +140,9 @@ fn search_neighborhood(
                 let mut new_solution = current_solution.clone();
                 new_solution[i] = j;
                 (best_delta, best_solution) = (delta, new_solution);
-                if greedy {
-                    break;
-                }
+            }
+            if greedy {
+                break;
             }
         }
     }

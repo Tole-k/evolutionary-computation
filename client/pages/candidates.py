@@ -111,33 +111,19 @@ CONCLUSIONS = r"""
 ALGORITHMS = [
     Algorithm(
         "LS Candidate 10",
-        "ls_candidate_10",
-        INITIAL_RANDOM + NODES + STEEPEST,
+        "ls_candidate_10_edge",
+        INITIAL_RANDOM + EDGES + STEEPEST,
     ),
     Algorithm(
         "LS Candidate 25",
-        "ls_candidate_25",
+        "ls_candidate_25_edge",
         "",
     ),
     Algorithm(
         "LS Candidate 50",
-        "ls_candidate_50",
+        "ls_candidate_50_edge",
         "",
     ),
-# ] + [
-#     Algorithm(
-#         "LS Candidate 10 Edge",
-#         "ls_candidate_10_edge",
-#         "",
-# ),    Algorithm(
-#         "LS Candidate 25 Edge",
-#         "ls_candidate_25_edge",
-#         "",
-# ),    Algorithm(
-#         "LS Candidate 50 Edge",
-#         "ls_candidate_50_edge",
-#         "",
-#     ),
 ]
 
 
@@ -161,12 +147,12 @@ if __name__ == "__main__":
         return scores, times
 
     algorithm_comparison_page(
-        ALGORITHMS + [local_algorithms[2], local_algorithms[6], local_algorithms[7]],
+        ALGORITHMS + [local_algorithms[0], local_algorithms[4], local_algorithms[5]],
         "Local Search Candidates",
         conclusions=CONCLUSIONS,
     )
     metric = evolutionary.main(
-        st.session_state["tsp_version"].replace(" ", ""), ["ls_steepest_nodes_random"]
+        st.session_state["tsp_version"].replace(" ", ""), ["ls_steepest_edges_random"]
     )[0]
     scores, times = get_candidates_metrics()
     col1, col2 = st.columns(2)

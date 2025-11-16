@@ -41,13 +41,27 @@ fn generate_neighborhood(
     candidates: &Vec<Vec<usize>>,
 ) -> Vec<(usize, usize, usize)> {
     let mut solutions: Vec<(usize, usize, usize)> = Vec::new();
-
+    let n = current_solution.len();
     for (i_id, i) in current_solution.iter().enumerate() {
+        let prev_node = (i_id - 1 + n) % n;
+        let next_node = (i_id + 1) % n;
         for j in candidates[*i].iter() {
             let a = current_solution.iter().position(|&x| x == *j);
             match a {
-                Some(index) => solutions.push((0 as usize, i_id, index)),
-                None => solutions.push((1, i_id, *j)),
+                Some(index) => {
+                    if prev_node != index {
+                        solutions.push((0, prev_node, index));
+                    }
+                    solutions.push((0, i_id, index));
+                    if next_node != index {
+                        solutions.push((0, next_node, index));
+                    }
+                }
+                None => {
+                    solutions.push((1, prev_node, *j));
+                    solutions.push((1, i_id, *j));
+                    solutions.push((1, next_node, *j));
+                }
             }
         }
     }
@@ -72,16 +86,19 @@ fn search_neighborhood(
                 (best_delta, best_solution) = (delta, new_solution);
             }
         } else if change_edges {
-            let delta = intra_edges(current_solution, i, j, distance_matrix);
+            let a: usize;
+            let b: usize;
+            if i < j {
+                a = i;
+                b = j;
+            } else {
+                a = j;
+                b = i;
+            }
+            let delta = intra_edges(current_solution, a, b, distance_matrix);
             if delta < best_delta {
                 let mut new_solution = current_solution.clone();
-                let sub_slice;
-                if i < j {
-                    sub_slice = &mut new_solution[i..=j];
-                } else {
-                    sub_slice = &mut new_solution[j..=i];
-                }
-                sub_slice.reverse();
+                new_solution[a..=b].reverse();
                 (best_delta, best_solution) = (delta, new_solution);
             }
         } else {
@@ -239,5 +256,5 @@ pub fn ls_candidate_faster(
     candidates: &Vec<Vec<usize>>,
 ) -> Vec<usize> {
     let initial_solution = generate_random_solution(data, starting_point_index, distance_matrix);
-    local_search(data, initial_solution, distance_matrix, false, &candidates)
+    local_search(data, initial_solution, distance_matrix, true, &candidates)
 }
