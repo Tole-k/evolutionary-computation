@@ -96,12 +96,7 @@ fn apply_if_valid(
             delta,
             node1_w_neighbors,
             outside_node,
-        }) => match case_inter_nodes(
-            current_solution,
-            delta,
-            node1_w_neighbors,
-            outside_node,
-        ) {
+        }) => match case_inter_nodes(current_solution, delta, node1_w_neighbors, outside_node) {
             None => return None,
             Some(value) => return Some(value),
         },
@@ -272,7 +267,7 @@ fn case_intra_edges(
         || (prev_node1_position - 1 == node1_position && node2_position - 1 == node2_next_position)
     {
         let mut new_solution = current_solution.clone();
-        let sub_slice = &mut new_solution[node1_position..=node2_position];
+        let sub_slice = if node1_position<node2_position {&mut new_solution[node1_position..=node2_position]} else {&mut new_solution[node2_position..=node1_position]};
         sub_slice.reverse();
         return Some((delta, new_solution));
     } else if (prev_node1_position - 1 == node1_position
@@ -419,6 +414,13 @@ pub fn local_search_w_cached_deltas(
             }
         }
         recover_stored_moves(&mut lm, &mut stored_moves);
+        add_all_moves(
+            data,
+            distance_matrix,
+            &mut lm,
+            &current_solution,
+            change_edges,
+        );
         if best_delta < 0. {
             current_solution = best_solution;
         } else {
@@ -463,6 +465,13 @@ pub fn local_search_w_cached_deltas_full(
             }
         }
         recover_stored_moves(&mut lm, &mut stored_moves);
+        add_all_moves(
+            data,
+            distance_matrix,
+            &mut lm,
+            &current_solution,
+            change_edges,
+        );
         if best_delta < 0. {
             full_solution.push(best_solution.clone());
             current_solution = best_solution;
