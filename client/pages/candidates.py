@@ -11,33 +11,6 @@ initial solution = get_random_solution(n)
 
 """
 
-NODES = r"""
-fn intra(i, j):
-    a = Distance[(i - 1) % n][i]
-    b = Distance[(i - 1) % n][j]
-    c = Distance[(j - 1) % n][i]
-    d = Distance[(j - 1) % n][j]
-
-    e = Distance[i][(i + 1) % n]
-    f = Distance[j][(i + 1) % n]
-    g = Distance[i][(j + 1) % n]
-    h = Distance[j][(j + 1) % n]
-    if i + 1 == j
-        return b + g - a - h 
-    else if (j + 1) % n == j
-        return -e - d + f + c
-    else
-        return -a + b + c - d - e + f + g - h
-
-fn intra_change(solution, i, j):
-    solution = copy(solution)
-    temp = -1
-    solution.replace(i, a)
-    solution.replace(j, i)
-    solution.replace(a, j)
-    return solution
-"""
-
 EDGES = r"""
 fn intra(i, j):
     (a, b) = (i, j)
@@ -102,10 +75,10 @@ while True:
 """
 
 CONCLUSIONS = r"""
-- We know that the full local search is upped limit for our score
-- Because of efficient neighborhood generation in version, the speed up wasn't so spectacular
-- The idea of creating candidates to minimize the time necessary to achieve results faster would be great if the calculating cost would be higher
-- The score on `n` below 50 is on average worse than from the classical local search
+- We know that the full local search should be upper limit for our solution score (It doesn't have to be because of random start, and it can end up in different local optimum)
+- Algorithm performs visibly faster, with little performance loss
+- When the number of candidates is more than 60 than original implementation is faster, as creation of neighborhood and search if node is in initial solution takes significant time
+- 10 candidates result is visibly worse solution, but because of very high speed up it is worth of consideration, nevertheless with 15+ candidates, the score difference is very little, especially if we take into consideration that the initial solution is random, making it better to run few more random run's rather than making full local search on fewer runs
 """
 
 ALGORITHMS = [
