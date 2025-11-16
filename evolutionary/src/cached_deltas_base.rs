@@ -1,10 +1,10 @@
 use crate::local_search_base::{generate_neighborhood, inter, intra, intra_edges};
 use crate::utils::DataPoint;
-use crate::utils::generate_random_solution;
+use crate::utils::{generate_random_solution, check_solution};
 use ndarray::Array2;
 use std::cmp::Ordering;
 use std::cmp::Reverse;
-use std::collections::BinaryHeap;
+use std::collections::{BinaryHeap, HashSet};
 
 trait Move {
     fn delta(&self) -> f64;
@@ -67,52 +67,37 @@ fn apply_if_valid(
     current_solution: &Vec<usize>,
     stored_moves: &mut Vec<MoveType>,
     mv: MoveType,
-) -> Option<(f64, Vec<usize>)> {
+) -> Option<(Vec<usize>, MoveType)> {
     match mv {
-        MoveType::IntraEdge(IntraEdgeMove {
-            delta,
-            edge1,
-            edge2,
-        }) => match case_intra_edges(current_solution, mv, delta, edge1, edge2, stored_moves) {
+        MoveType::IntraEdge(mv) => match case_intra_edges(current_solution, mv, stored_moves) {
             None => return None,
-            Some(value) => return Some(value),
+            Some(value) => return Some((value.0, MoveType::IntraEdge(value.1))),
         },
-        MoveType::IntraNode(IntraNodeMove {
-            delta,
-            node1_w_neighbors,
-            node2_w_neighbors,
-        }) => {
-            match case_intra_nodes(
-                current_solution,
-                delta,
-                node1_w_neighbors,
-                node2_w_neighbors,
-            ) {
-                None => return None,
-                Some(value) => return Some(value),
-            }
-        }
-        MoveType::InterNode(InterNodeMove {
-            delta,
-            node1_w_neighbors,
-            outside_node,
-        }) => match case_inter_nodes(current_solution, delta, node1_w_neighbors, outside_node) {
+        MoveType::IntraNode(mv) => match case_intra_nodes(current_solution, mv) {
             None => return None,
-            Some(value) => return Some(value),
+            Some(value) => return Some((value.0, MoveType::IntraNode(value.1))),
+        },
+        MoveType::InterNode(mv) => match case_inter_nodes(current_solution, mv) {
+            None => return None,
+            Some(value) => return Some((value.0, MoveType::InterNode(value.1))),
         },
     }
 }
 
 fn case_inter_nodes(
     current_solution: &Vec<usize>,
-    delta: f64,
-    node1_w_neighbors: [usize; 3],
-    outside_node: usize,
-) -> Option<(f64, Vec<usize>)> {
+    mv: InterNodeMove,
+) -> Option<(Vec<usize>, InterNodeMove)> {
+    let InterNodeMove {
+        delta,
+        node1_w_neighbors,
+        outside_node,
+    } = mv;
     let [prev_node1, node1, node1_next] = node1_w_neighbors;
     let node1_position: usize;
     let prev_node1_position: usize;
     let node1_next_position: usize;
+    let n = current_solution.len();
     match current_solution.iter().position(|x| *x == node1) {
         None => {
             return None;
@@ -143,10 +128,19 @@ fn case_inter_nodes(
             return None;
         }
     }
-    if prev_node1_position + 1 == node1_position && node1_position == node1_next_position - 1 {
+    if (prev_node1_position + 1) % n == node1_position
+        && node1_position == (node1_next_position + n - 1) % n
+    {
         let mut new_solution = current_solution.clone();
         new_solution[node1_position] = outside_node;
-        return Some((delta, new_solution));
+        return Some((
+            new_solution,
+            InterNodeMove {
+                delta,
+                node1_w_neighbors: [prev_node1_position, node1_position, node1_next_position],
+                outside_node,
+            },
+        ));
     } else {
         return None;
     }
@@ -154,10 +148,13 @@ fn case_inter_nodes(
 
 fn case_intra_nodes(
     current_solution: &Vec<usize>,
-    delta: f64,
-    node1_w_neighbors: [usize; 3],
-    node2_w_neighbors: [usize; 3],
-) -> Option<(f64, Vec<usize>)> {
+    mv: IntraNodeMove,
+) -> Option<(Vec<usize>, IntraNodeMove)> {
+    let IntraNodeMove {
+        delta,
+        node1_w_neighbors,
+        node2_w_neighbors,
+    } = mv;
     let [prev_node1, node1, node1_next] = node1_w_neighbors;
     let [prev_node2, node2, node2_next] = node2_w_neighbors;
     let node1_position: usize;
@@ -166,6 +163,7 @@ fn case_intra_nodes(
     let prev_node2_position: usize;
     let node2_position: usize;
     let node2_next_position: usize;
+    let n = current_solution.len();
     match current_solution.iter().position(|x| *x == node1) {
         None => {
             return None;
@@ -214,12 +212,21 @@ fn case_intra_nodes(
             node2_next_position = position;
         }
     }
-    if (prev_node1_position + 1 == node1_position && node1_position == node1_next_position - 1)
-        && (prev_node2_position + 1 == node2_position && node2_position == node2_next_position - 1)
+    if (prev_node1_position + 1) % n == node1_position
+        && node1_position == (node1_next_position + n - 1) % n
+        && (prev_node2_position + 1) % n == node2_position
+        && node2_position == (node2_next_position + n - 1) % n
     {
         let mut new_solution = current_solution.clone();
         new_solution.swap(node1_position, node2_position);
-        return Some((delta, new_solution));
+        return Some((
+            new_solution,
+            IntraNodeMove {
+                delta,
+                node1_w_neighbors: [prev_node1_position, node1_position, node1_next_position],
+                node2_w_neighbors: [prev_node2_position, node2_position, node2_next_position],
+            },
+        ));
     } else {
         return None;
     }
@@ -227,18 +234,21 @@ fn case_intra_nodes(
 
 fn case_intra_edges(
     current_solution: &Vec<usize>,
-    mv: MoveType,
-    delta: f64,
-    edge1: [usize; 2],
-    edge2: [usize; 2],
+    mv: IntraEdgeMove,
     stored_moves: &mut Vec<MoveType>,
-) -> Option<(f64, Vec<usize>)> {
+) -> Option<(Vec<usize>, IntraEdgeMove)> {
+    let IntraEdgeMove {
+        delta,
+        edge1,
+        edge2,
+    } = mv;
     let [prev_node1, node1] = edge1;
     let [node2, node2_next] = edge2;
     let node1_position: usize;
     let prev_node1_position: usize;
     let node2_position: usize;
     let node2_next_position: usize;
+    let n = current_solution.len();
     match current_solution.iter().position(|x| *x == node1) {
         None => return None,
         Some(position) => {
@@ -263,18 +273,32 @@ fn case_intra_edges(
             node2_next_position = position;
         }
     }
-    if (prev_node1_position + 1 == node1_position && node2_position + 1 == node2_next_position)
-        || (prev_node1_position - 1 == node1_position && node2_position - 1 == node2_next_position)
+    if ((prev_node1_position + 1) % n == node1_position
+        && (node2_position + 1) % n == node2_next_position)
+        || ((prev_node1_position + n - 1) % n == node1_position
+            && (node2_position + n - 1) % n == node2_next_position)
     {
         let mut new_solution = current_solution.clone();
-        let sub_slice = if node1_position<node2_position {&mut new_solution[node1_position..=node2_position]} else {&mut new_solution[node2_position..=node1_position]};
+        let sub_slice = if node1_position < node2_position {
+            &mut new_solution[node1_position..=node2_position]
+        } else {
+            &mut new_solution[node2_position..=node1_position]
+        };
         sub_slice.reverse();
-        return Some((delta, new_solution));
-    } else if (prev_node1_position - 1 == node1_position
-        && node2_position + 1 == node2_next_position)
-        || (prev_node1_position + 1 == node1_position && node2_position - 1 == node2_next_position)
+        return Some((
+            new_solution,
+            IntraEdgeMove {
+                delta,
+                edge1: [prev_node1_position, node1_position],
+                edge2: [node2_position, node2_next_position],
+            },
+        ));
+    } else if ((prev_node1_position + n - 1) % n == node1_position
+        && (node2_position + 1) % n == node2_next_position)
+        || ((prev_node1_position + 1) % n == node1_position
+            && (node2_position + n - 1) % n == node2_next_position)
     {
-        stored_moves.push(mv);
+        stored_moves.push(MoveType::IntraEdge(mv));
         return None;
     } else {
         return None;
@@ -283,7 +307,7 @@ fn case_intra_edges(
 
 fn add_all_moves(
     data: &Vec<DataPoint>,
-    distance_matrix: &ndarray::ArrayBase<ndarray::OwnedRepr<f64>, ndarray::Dim<[usize; 2]>>,
+    distance_matrix: &Array2<f64>,
     lm: &mut BinaryHeap<Reverse<MoveType>>,
     current_solution: &Vec<usize>,
     change_edges: bool,
@@ -303,7 +327,7 @@ fn add_all_moves(
 }
 
 fn add_intra_edge_move(
-    distance_matrix: &ndarray::ArrayBase<ndarray::OwnedRepr<f64>, ndarray::Dim<[usize; 2]>>,
+    distance_matrix: &Array2<f64>,
     lm: &mut BinaryHeap<Reverse<MoveType>>,
     current_solution: &Vec<usize>,
     i: usize,
@@ -311,13 +335,18 @@ fn add_intra_edge_move(
 ) {
     let n = current_solution.len();
     let delta = intra_edges(current_solution, i, j, distance_matrix);
-    if delta > 0. {
+    if delta >= 0. {
         return;
     }
-    let node1 = current_solution[i];
-    let prev_node1 = current_solution[(i - 1 + n) % n];
-    let node2 = current_solution[j];
-    let node2_next = current_solution[(j + 1) % n];
+    let (mut a, mut b) = (i, j);
+    if (j + 1) % n == i {
+        a = j;
+        b = i;
+    }
+    let node1 = current_solution[a];
+    let prev_node1 = current_solution[(a - 1 + n) % n];
+    let node2 = current_solution[b];
+    let node2_next = current_solution[(b + 1) % n];
     let intra_edge_move = IntraEdgeMove {
         delta,
         edge1: [prev_node1, node1],
@@ -326,7 +355,7 @@ fn add_intra_edge_move(
     lm.push(Reverse(MoveType::IntraEdge(intra_edge_move)));
 }
 fn add_intra_node_move(
-    distance_matrix: &ndarray::ArrayBase<ndarray::OwnedRepr<f64>, ndarray::Dim<[usize; 2]>>,
+    distance_matrix: &Array2<f64>,
     lm: &mut BinaryHeap<Reverse<MoveType>>,
     current_solution: &Vec<usize>,
     i: usize,
@@ -334,7 +363,7 @@ fn add_intra_node_move(
 ) {
     let n = current_solution.len();
     let delta = intra(current_solution, i, j, distance_matrix);
-    if delta > 0. {
+    if delta >= 0. {
         return;
     }
     let node1 = current_solution[i];
@@ -351,7 +380,7 @@ fn add_intra_node_move(
     lm.push(Reverse(MoveType::IntraNode(intra_node_move)));
 }
 fn add_inter_node_move(
-    distance_matrix: &ndarray::ArrayBase<ndarray::OwnedRepr<f64>, ndarray::Dim<[usize; 2]>>,
+    distance_matrix: &Array2<f64>,
     lm: &mut BinaryHeap<Reverse<MoveType>>,
     current_solution: &Vec<usize>,
     i: usize,
@@ -360,7 +389,7 @@ fn add_inter_node_move(
 ) {
     let n = current_solution.len();
     let delta = inter(current_solution, i, j, distance_matrix, data);
-    if delta > 0. {
+    if delta >= 0. {
         return;
     }
     let node1 = current_solution[i];
@@ -379,6 +408,102 @@ fn recover_stored_moves(lm: &mut BinaryHeap<Reverse<MoveType>>, stored_moves: &m
         lm.push(Reverse(mv.clone()));
     }
     stored_moves.clear();
+}
+fn add_inter_node_moves(
+    data: &Vec<DataPoint>,
+    distance_matrix: &Array2<f64>,
+    lm: &mut BinaryHeap<Reverse<MoveType>>,
+    solution: &Vec<usize>,
+    i: usize,
+) {
+    let hash_solution: HashSet<usize> = HashSet::from_iter(solution.clone());
+    let m = data.len();
+    let all: HashSet<usize> = (0..m).collect();
+    let difference: Vec<usize> = all.difference(&hash_solution).cloned().collect();
+
+    for j in &difference {
+        add_inter_node_move(distance_matrix, lm, solution, i, *j, data);
+    }
+}
+fn add_intra_edge_moves(
+    distance_matrix: &Array2<f64>,
+    lm: &mut BinaryHeap<Reverse<MoveType>>,
+    solution: &Vec<usize>,
+    i: usize,
+) {
+    for j in 0..solution.len() {
+        if i == j {
+            continue;
+        }
+        add_intra_edge_move(distance_matrix, lm, solution, i, j);
+    }
+}
+
+fn add_intra_node_moves(
+    distance_matrix: &Array2<f64>,
+    lm: &mut BinaryHeap<Reverse<MoveType>>,
+    solution: &Vec<usize>,
+    i: usize,
+) {
+    for j in 0..solution.len() {
+        if i == j {
+            continue;
+        }
+        add_intra_node_move(distance_matrix, lm, solution, i, j);
+    }
+}
+fn add_new_moves(
+    data: &Vec<DataPoint>,
+    distance_matrix: &Array2<f64>,
+    change_edges: bool,
+    lm: &mut BinaryHeap<Reverse<MoveType>>,
+    best_solution: &Vec<usize>,
+    bm: MoveType,
+) {
+    match bm {
+        MoveType::IntraEdge(mv) => {
+            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.edge1[0]);
+            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.edge1[1]);
+            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.edge2[0]);
+            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.edge2[1]);
+            add_intra_edge_moves(distance_matrix, lm, best_solution, mv.edge1[1]);
+            add_intra_edge_moves(distance_matrix, lm, best_solution, mv.edge2[1]);
+        }
+        MoveType::IntraNode(mv) => {
+            add_inter_node_moves(
+                data,
+                distance_matrix,
+                lm,
+                best_solution,
+                mv.node1_w_neighbors[1],
+            );
+            add_inter_node_moves(
+                data,
+                distance_matrix,
+                lm,
+                best_solution,
+                mv.node2_w_neighbors[1],
+            );
+
+            add_intra_node_moves(distance_matrix, lm, best_solution, mv.node1_w_neighbors[1]);
+            add_intra_node_moves(distance_matrix, lm, best_solution, mv.node2_w_neighbors[1]);
+        }
+        MoveType::InterNode(mv) => {
+            add_inter_node_moves(
+                data,
+                distance_matrix,
+                lm,
+                best_solution,
+                mv.node1_w_neighbors[1],
+            );
+            if change_edges {
+                add_intra_edge_moves(distance_matrix, lm, best_solution, mv.node1_w_neighbors[2]);
+                add_intra_edge_moves(distance_matrix, lm, best_solution, mv.node1_w_neighbors[1]);
+            } else {
+                add_intra_node_moves(distance_matrix, lm, best_solution, mv.node1_w_neighbors[2]);
+            }
+        }
+    }
 }
 
 pub fn local_search_w_cached_deltas(
@@ -399,30 +524,73 @@ pub fn local_search_w_cached_deltas(
     );
     loop {
         let mut best_solution: Vec<usize> = current_solution.clone();
-        let mut best_delta: f64 = 0.0;
+        let mut best_delta: Option<f64> = None;
+        let mut best_move: Option<MoveType> = None;
         let mut stored_moves: Vec<MoveType> = vec![];
 
         while !lm.is_empty() {
             let Reverse(mv) = lm.pop().unwrap();
             match apply_if_valid(&current_solution, &mut stored_moves, mv) {
                 None => {}
-                Some((delta, new_solution)) => {
-                    best_delta = delta;
-                    best_solution = new_solution;
-                    break;
+                Some((new_solution, mv)) => {
+                    // Recompute delta on the current solution to avoid accepting stale negatives
+                    let recomputed = match mv.clone() {
+                        MoveType::IntraEdge(m) => {
+                            let i = m.edge1[1];
+                            let j = m.edge2[0];
+                            intra_edges(&current_solution, i, j, distance_matrix)
+                        }
+                        MoveType::IntraNode(m) => {
+                            let i = m.node1_w_neighbors[1];
+                            let j = m.node2_w_neighbors[1];
+                            intra(&current_solution, i, j, distance_matrix)
+                        }
+                        MoveType::InterNode(m) => {
+                            let i = m.node1_w_neighbors[1];
+                            let j = m.outside_node;
+                            inter(&current_solution, i, j, distance_matrix, data)
+                        }
+                    };
+                    if recomputed < 0. {
+                        // update move delta to the recomputed value before accepting
+                        let updated_move = match mv.clone() {
+                            MoveType::IntraEdge(mut m) => {
+                                m.delta = recomputed;
+                                MoveType::IntraEdge(m)
+                            }
+                            MoveType::IntraNode(mut m) => {
+                                m.delta = recomputed;
+                                MoveType::IntraNode(m)
+                            }
+                            MoveType::InterNode(mut m) => {
+                                m.delta = recomputed;
+                                MoveType::InterNode(m)
+                            }
+                        };
+                        best_delta = Some(recomputed);
+                        best_solution = new_solution;
+                        best_move = Some(updated_move);
+                        break;
+                    }
+                    // otherwise ignore stale/non-improving move
                 }
             }
         }
-        recover_stored_moves(&mut lm, &mut stored_moves);
-        add_all_moves(
-            data,
-            distance_matrix,
-            &mut lm,
-            &current_solution,
-            change_edges,
-        );
-        if best_delta < 0. {
-            current_solution = best_solution;
+        if let Some(_delta) = best_delta {
+            recover_stored_moves(&mut lm, &mut stored_moves);
+            if let Some(bm) = best_move {
+                // add_all_moves(data, distance_matrix, &mut lm, &current_solution, change_edges);
+                add_new_moves(
+                    data,
+                    distance_matrix,
+                    change_edges,
+                    &mut lm,
+                    &best_solution,
+                    bm,
+                );
+                current_solution = best_solution;
+                // println!("{}", check_solution(&current_solution,data, distance_matrix));
+            }
         } else {
             break;
         }
@@ -450,31 +618,36 @@ pub fn local_search_w_cached_deltas_full(
     );
     loop {
         let mut best_solution: Vec<usize> = current_solution.clone();
-        let mut best_delta: f64 = 0.0;
+        let mut best_delta: Option<f64> = None;
+        let mut best_move: Option<MoveType> = None;
         let mut stored_moves: Vec<MoveType> = vec![];
 
         while !lm.is_empty() {
             let Reverse(mv) = lm.pop().unwrap();
             match apply_if_valid(&current_solution, &mut stored_moves, mv) {
                 None => {}
-                Some((delta, new_solution)) => {
-                    best_delta = delta;
+                Some((new_solution, mv)) => {
+                    best_delta = Some(mv.delta());
                     best_solution = new_solution;
+                    best_move = Some(mv);
                     break;
                 }
             }
         }
-        recover_stored_moves(&mut lm, &mut stored_moves);
-        add_all_moves(
-            data,
-            distance_matrix,
-            &mut lm,
-            &current_solution,
-            change_edges,
-        );
-        if best_delta < 0. {
-            full_solution.push(best_solution.clone());
-            current_solution = best_solution;
+        if let Some(_delta) = best_delta {
+            recover_stored_moves(&mut lm, &mut stored_moves);
+            if let Some(bm) = best_move {
+                add_new_moves(
+                    data,
+                    distance_matrix,
+                    change_edges,
+                    &mut lm,
+                    &best_solution,
+                    bm,
+                );
+                current_solution = best_solution;
+                full_solution.push(current_solution.clone());
+            }
         } else {
             break;
         }
