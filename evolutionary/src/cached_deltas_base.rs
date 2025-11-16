@@ -501,43 +501,38 @@ fn add_new_moves(
             add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.edge1_second_node);
             add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.edge2_first_node);
             add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.edge2_second_node);
+
             add_intra_edge_moves(distance_matrix, lm, best_solution, mv.edge1_first_node);
             add_intra_edge_moves(distance_matrix, lm, best_solution, mv.edge1_second_node);
             add_intra_edge_moves(distance_matrix, lm, best_solution, mv.edge2_first_node);
             add_intra_edge_moves(distance_matrix, lm, best_solution, mv.edge2_second_node);
         }
         MoveType::IntraNode(mv) => {
-            add_inter_node_moves(
-                data,
-                distance_matrix,
-                lm,
-                best_solution,
-                mv.node1,
-            );
-            add_inter_node_moves(
-                data,
-                distance_matrix,
-                lm,
-                best_solution,
-                mv.node2,
-            );
+            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.before_node1);
+            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.node1);
+            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.after_node1);
+            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.before_node2);
+            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.node2);
+            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.after_node2);
 
+            add_intra_node_moves(distance_matrix, lm, best_solution, mv.before_node1);
             add_intra_node_moves(distance_matrix, lm, best_solution, mv.node1);
+            add_intra_node_moves(distance_matrix, lm, best_solution, mv.after_node1);
+            add_intra_node_moves(distance_matrix, lm, best_solution, mv.before_node2);
             add_intra_node_moves(distance_matrix, lm, best_solution, mv.node2);
+            add_intra_node_moves(distance_matrix, lm, best_solution, mv.after_node2);
         }
         MoveType::InterNode(mv) => {
-            add_inter_node_moves(
-                data,
-                distance_matrix,
-                lm,
-                best_solution,
-                mv.node1,
-            );
+            add_inter_node_moves(data,distance_matrix,lm,best_solution,mv.before_node1);
+            add_inter_node_moves(data,distance_matrix,lm,best_solution,mv.node1);
+            add_inter_node_moves(data,distance_matrix,lm,best_solution,mv.after_node1);
             if change_edges {
                 add_intra_edge_moves(distance_matrix, lm, best_solution, mv.before_node1);
                 add_intra_edge_moves(distance_matrix, lm, best_solution, mv.node1);
                 add_intra_edge_moves(distance_matrix, lm, best_solution, mv.after_node1);
             } else {
+                add_intra_node_moves(distance_matrix, lm, best_solution, mv.before_node1);
+                add_intra_node_moves(distance_matrix, lm, best_solution, mv.node1);
                 add_intra_node_moves(distance_matrix, lm, best_solution, mv.after_node1);
             }
         }
