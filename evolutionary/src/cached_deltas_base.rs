@@ -533,46 +533,10 @@ pub fn local_search_w_cached_deltas(
             match apply_if_valid(&current_solution, &mut stored_moves, mv) {
                 None => {}
                 Some((new_solution, mv)) => {
-                    // Recompute delta on the current solution to avoid accepting stale negatives
-                    let recomputed = match mv.clone() {
-                        MoveType::IntraEdge(m) => {
-                            let i = m.edge1[1];
-                            let j = m.edge2[0];
-                            intra_edges(&current_solution, i, j, distance_matrix)
-                        }
-                        MoveType::IntraNode(m) => {
-                            let i = m.node1_w_neighbors[1];
-                            let j = m.node2_w_neighbors[1];
-                            intra(&current_solution, i, j, distance_matrix)
-                        }
-                        MoveType::InterNode(m) => {
-                            let i = m.node1_w_neighbors[1];
-                            let j = m.outside_node;
-                            inter(&current_solution, i, j, distance_matrix, data)
-                        }
-                    };
-                    if recomputed < 0. {
-                        // update move delta to the recomputed value before accepting
-                        let updated_move = match mv.clone() {
-                            MoveType::IntraEdge(mut m) => {
-                                m.delta = recomputed;
-                                MoveType::IntraEdge(m)
-                            }
-                            MoveType::IntraNode(mut m) => {
-                                m.delta = recomputed;
-                                MoveType::IntraNode(m)
-                            }
-                            MoveType::InterNode(mut m) => {
-                                m.delta = recomputed;
-                                MoveType::InterNode(m)
-                            }
-                        };
-                        best_delta = Some(recomputed);
-                        best_solution = new_solution;
-                        best_move = Some(updated_move);
-                        break;
-                    }
-                    // otherwise ignore stale/non-improving move
+                    best_delta = Some(mv.delta());
+                    best_solution = new_solution;
+                    best_move = Some(mv);
+                    break;
                 }
             }
         }
