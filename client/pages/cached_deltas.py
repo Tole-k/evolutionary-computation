@@ -4,7 +4,10 @@ from pages.local import ALGORITHMS as ls_algorithms
 
 PSEUDOCODE = r""""""
 
-CONCLUSIONS = r""""""
+CONCLUSIONS = r"""
+- Scores are almost identical to those of the steepest local search algorithm with negligible deviations.
+- Running times are vastly improved, resulting in a speedup of around 3x.
+"""
 
 ALGORITHMS = [
     Algorithm(
