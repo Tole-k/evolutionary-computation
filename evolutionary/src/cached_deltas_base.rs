@@ -149,8 +149,10 @@ fn case_inter_nodes(
             return None;
         }
     }
-    if (before_node1_position + 1) % n == node1_position
-        && node1_position == (after_node1_position + n - 1) % n
+    if ((before_node1_position + 1) % n == node1_position
+        && node1_position == (after_node1_position + n - 1) % n)
+        || ((before_node1_position - 1 + n) % n == node1_position
+            && node1_position == (after_node1_position + 1) % n)
     {
         let mut new_solution = current_solution.clone();
         new_solution[node1_position] = outside_node;
@@ -237,10 +239,14 @@ fn case_intra_nodes(
             after_node2_position = position;
         }
     }
-    if (before_node1_position + 1) % n == node1_position
+    if ((before_node1_position + 1) % n == node1_position
         && node1_position == (after_node1_position + n - 1) % n
         && (before_node2_position + 1) % n == node2_position
-        && node2_position == (after_node2_position + n - 1) % n
+        && node2_position == (after_node2_position + n - 1) % n) 
+        || ((before_node1_position - 1 + n) % n == node1_position
+        && node1_position == (after_node1_position + 1) % n
+        && (before_node2_position - 1 + n) % n == node2_position
+        && node2_position == (after_node2_position + 1) % n)
     {
         let mut new_solution = current_solution.clone();
         new_solution.swap(node1_position, node2_position);
