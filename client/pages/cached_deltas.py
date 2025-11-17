@@ -34,7 +34,7 @@ fn check_intra_validity(solution, move):
         return false
     return false
 
-fn add_all_possible_improving_moves_intra(lm, solution, move):
+fn add_new_improving_moves_intra(lm, solution, move):
     add_inter_moves_from_node(lm, solution, move.edge1_first_node)
     add_inter_moves_from_node(lm, solution, move.edge1_second_node)
     add_inter_moves_from_node(lm, solution, move.edge2_first_node)
@@ -77,11 +77,11 @@ fn valid(move, solution):
 
 fn add_new_improving_moves(lm, solution, move):
     if move.type == "inter":
-        add_all_possible_improving_moves_inter(lm, solution, move)
+        add_new_improving_moves_inter(lm, solution, move)
     else:
-        add_all_possible_improving_moves_intra(lm, solution, move)
+        add_new_improving_moves_intra(lm, solution, move)
         
-fn add_all_possible_improving_inter_moves(lm, solution, move):
+fn add_new_improving_moves_inter(lm, solution, move):
     add_inter_moves_from_node(lm, solution, move.prev)
     add_inter_moves_from_node(lm, solution, move.node)
     add_inter_moves_from_node(lm, solution, move.next)
