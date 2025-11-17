@@ -55,6 +55,7 @@ def report(algorithms: list[Algorithm], name: str, additional_algorithms: list[A
     main(report=True)
 
     st.title(name)
+    st.set_page_config(layout="wide")
     tsp_plotter_a = TSPPlotter("TSP A", dark_mode=False)  # type: ignore
     tsp_plotter_b = TSPPlotter("TSP B", dark_mode=False)  # type: ignore
     df_a, best_paths_a = load_solution("TSP A")
