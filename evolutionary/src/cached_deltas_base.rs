@@ -1,4 +1,4 @@
-use crate::local_search_base::{generate_neighborhood, inter, intra, intra_edges};
+use crate::local_search_base::{generate_neighborhood, inter, intra};
 use crate::utils::DataPoint;
 use crate::utils::generate_random_solution;
 use ndarray::Array2;
@@ -70,7 +70,19 @@ impl Move for MoveType {
         }
     }
 }
-
+fn intra_edges(
+    solution: &Vec<usize>,
+    a: usize,
+    prev_a: usize,
+    b: usize,
+    next_b: usize,
+    distance_matrix: &Array2<f64>,
+) -> f64 {
+    return -distance_matrix[[solution[prev_a], solution[a]]]
+        - distance_matrix[[solution[b], solution[next_b]]]
+        + distance_matrix[[solution[prev_a], solution[b]]]
+        + distance_matrix[[solution[a], solution[next_b]]];
+}
 fn apply_if_valid(
     current_solution: &Vec<usize>,
     stored_moves: &mut Vec<MoveType>,
@@ -359,25 +371,40 @@ fn add_intra_edge_move(
     j: usize,
 ) {
     let n = current_solution.len();
-    let delta = intra_edges(current_solution, i, j, distance_matrix);
-    if delta >= 0. {
-        return;
-    }
     let (mut a, mut b) = (i, j);
     if (j + 1) % n == i {
         a = j;
         b = i;
     }
+    let prev_a = (a + n - 1) % n;
+    let next_b = (b + 1) % n;
+    let delta = intra_edges(current_solution, a, prev_a, b, next_b, distance_matrix);
+    if delta >= 0. {
+        return;
+    }
     let node1 = current_solution[a];
-    let prev_node1 = current_solution[(a - 1 + n) % n];
+    let prev_node1 = current_solution[prev_a];
     let node2 = current_solution[b];
-    let node2_next = current_solution[(b + 1) % n];
+    let node2_next = current_solution[next_b];
     let intra_edge_move = IntraEdgeMove {
         delta,
         edge1_first_node: prev_node1,
         edge1_second_node: node1,
         edge2_first_node: node2,
         edge2_second_node: node2_next,
+    };
+    lm.push(Reverse(MoveType::IntraEdge(intra_edge_move)));
+    let delta2 = intra_edges(current_solution, prev_a, a, next_b, b, distance_matrix);
+    let node1 = current_solution[a];
+    let prev_node1 = current_solution[prev_a];
+    let node2 = current_solution[b];
+    let node2_next = current_solution[next_b];
+    let intra_edge_move = IntraEdgeMove {
+        delta: delta2,
+        edge1_first_node: node1,
+        edge1_second_node: prev_node1,
+        edge2_first_node: node2_next,
+        edge2_second_node: node2,
     };
     lm.push(Reverse(MoveType::IntraEdge(intra_edge_move)));
 }
@@ -497,10 +524,34 @@ fn add_new_moves(
 ) {
     match bm {
         MoveType::IntraEdge(mv) => {
-            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.edge1_first_node);
-            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.edge1_second_node);
-            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.edge2_first_node);
-            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.edge2_second_node);
+            add_inter_node_moves(
+                data,
+                distance_matrix,
+                lm,
+                best_solution,
+                mv.edge1_first_node,
+            );
+            add_inter_node_moves(
+                data,
+                distance_matrix,
+                lm,
+                best_solution,
+                mv.edge1_second_node,
+            );
+            add_inter_node_moves(
+                data,
+                distance_matrix,
+                lm,
+                best_solution,
+                mv.edge2_first_node,
+            );
+            add_inter_node_moves(
+                data,
+                distance_matrix,
+                lm,
+                best_solution,
+                mv.edge2_second_node,
+            );
 
             add_intra_edge_moves(distance_matrix, lm, best_solution, mv.edge1_first_node);
             add_intra_edge_moves(distance_matrix, lm, best_solution, mv.edge1_second_node);
@@ -523,9 +574,9 @@ fn add_new_moves(
             add_intra_node_moves(distance_matrix, lm, best_solution, mv.after_node2);
         }
         MoveType::InterNode(mv) => {
-            add_inter_node_moves(data,distance_matrix,lm,best_solution,mv.before_node1);
-            add_inter_node_moves(data,distance_matrix,lm,best_solution,mv.node1);
-            add_inter_node_moves(data,distance_matrix,lm,best_solution,mv.after_node1);
+            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.before_node1);
+            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.node1);
+            add_inter_node_moves(data, distance_matrix, lm, best_solution, mv.after_node1);
             if change_edges {
                 add_intra_edge_moves(distance_matrix, lm, best_solution, mv.before_node1);
                 add_intra_edge_moves(distance_matrix, lm, best_solution, mv.node1);
