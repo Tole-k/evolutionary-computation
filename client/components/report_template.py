@@ -23,11 +23,24 @@ def to_dataframe(solution_data):
             for solution in solution_data
         ],
         [solution.name for solution in solution_data],
-        ["min score", "mean score", "max score", "min time [s]", "mean time [s]", "max time [s]", "total time [s]"],
+        [
+            "min score",
+            "mean score",
+            "max score",
+            "min time [s]",
+            "mean time [s]",
+            "max time [s]",
+            "total time [s]",
+        ],
     )
 
 
-def report(algorithms: list[Algorithm], name: str, additional_algorithms: list[Algorithm] | None = None, conclusions: str | None = None):
+def report(
+    algorithms: list[Algorithm],
+    name: str,
+    additional_algorithms: list[Algorithm] | None = None,
+    conclusions: str | None = None,
+):
     def load_solution(
         state,
     ) -> tuple[pd.DataFrame, dict[str, list[int]]]:
@@ -43,7 +56,9 @@ def report(algorithms: list[Algorithm], name: str, additional_algorithms: list[A
         solution_data = load_algorithm_results(algorithms, state.replace(" ", ""))
         df = to_dataframe(solution_data)
         if additional_algorithms is not None:
-            additional_solution_data = load_algorithm_results(additional_algorithms, state.replace(" ", ""))
+            additional_solution_data = load_algorithm_results(
+                additional_algorithms, state.replace(" ", "")
+            )
 
             df = pd.concat([df, to_dataframe(additional_solution_data)])
 
@@ -76,13 +91,17 @@ def report(algorithms: list[Algorithm], name: str, additional_algorithms: list[A
     st.subheader("Scores")
     st.dataframe(df_a[["min score", "mean score", "max score"]])
     st.subheader("Times")
-    st.dataframe(df_a[["min time [s]", "mean time [s]", "max time [s]", "total time [s]"]])
+    st.dataframe(
+        df_a[["min time [s]", "mean time [s]", "max time [s]", "total time [s]"]]
+    )
 
     st.header("TSP B")
     st.subheader("Scores")
     st.dataframe(df_b[["min score", "mean score", "max score"]])
     st.subheader("Times")
-    st.dataframe(df_b[["min time [s]", "mean time [s]", "max time [s]", "total time [s]"]])
+    st.dataframe(
+        df_b[["min time [s]", "mean time [s]", "max time [s]", "total time [s]"]]
+    )
 
     st.divider()
     if conclusions is not None:

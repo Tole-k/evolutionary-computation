@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 
 from utils import Algorithm, load_algorithm_results
-from components.simple_plots import comparison_plots, plot_complexity
+from components.simple_plots import comparison_plots
 from components.algorithm_explanation import algorithms_tabs
 from components.report_template import report
 

@@ -45,12 +45,16 @@ best_n_candidates = build_candidates(Distance, 10)
 
 while True:
     candidates = {}
-    for i in solution:
+    for id, i in enumerate(solution):
         for candidate in best_n_candidates:
             if candidate in solution:
+                candidates.add(('intra', solution[id-1], j))
                 candidates.add(('intra', i, j))
+                candidates.add(('intra', solution[id+1], j))
             else:
+                candidates.add(('inter', solution[id-1], j))
                 candidates.add(('inter', i, j))
+                candidates.add(('inter', solution[id+1], j))
 
     shuffle(candidates)
     
@@ -100,8 +104,6 @@ ALGORITHMS = [
 ]
 
 
-
-
 if __name__ == "__main__":
 
     @dill_cache(f"{st.session_state['tsp_version']}-candidates")
@@ -120,9 +122,10 @@ if __name__ == "__main__":
         return scores, times
 
     algorithm_comparison_page(
-        ALGORITHMS + [local_algorithms[0], local_algorithms[4], local_algorithms[5]],
+        ALGORITHMS,
         "Local Search Candidates",
-        conclusions=CONCLUSIONS,
+        [local_algorithms[0], local_algorithms[4], local_algorithms[5]],
+        CONCLUSIONS,
     )
     metric = evolutionary.main(
         st.session_state["tsp_version"].replace(" ", ""), ["ls_steepest_edges_random"]

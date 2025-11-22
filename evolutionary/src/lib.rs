@@ -2,13 +2,14 @@ mod greedy_algorithms;
 mod local_search;
 mod local_search_base;
 mod local_search_candidates;
+mod multi_local_search;
 mod regret_heuristics;
 mod utils;
 use ndarray::Array2;
 use pyo3::prelude::*;
 use std::{collections::HashMap, time::Instant, usize};
 
-use crate::{local_search_candidates::ls_candidate_faster, utils::Metrics};
+use crate::utils::{Metrics, check_solution};
 
 fn get_map() -> HashMap<&'static str, fn(&Vec<utils::DataPoint>, usize, &Array2<f64>) -> Vec<usize>>
 {
@@ -85,6 +86,8 @@ fn get_map() -> HashMap<&'static str, fn(&Vec<utils::DataPoint>, usize, &Array2<
             "ls_candidate_50_edge",
             local_search_candidates::ls_candidate_50_edge,
         ),
+        ("msls", multi_local_search::msls),
+        ("ils", multi_local_search::ils),
     ])
 }
 
@@ -188,12 +191,31 @@ fn benchmark_candidates(dataset: &str, size: usize) -> utils::Metrics {
     let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset}.csv"));
     let distance_matrix = utils::calculate_distance_matrix(&data);
     utils::benchmark_function_alpha(
-        ls_candidate_faster,
+        local_search_candidates::ls_candidate_faster,
         &data,
         &distance_matrix,
         "local_search_candidates",
         size,
     )
+}
+
+#[pyfunction]
+fn run(dataset: &str, name: &str) -> utils::Metrics {
+    let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset}.csv"));
+    let distance_matrix = utils::calculate_distance_matrix(&data);
+    // let names: Vec<&str> = names.iter().map(|s| &**s).collect();
+    let map = get_map();
+    let algorithms = map[name];
+    let start_time = Instant::now();
+    let solution = algorithms(&data, 42, &distance_matrix);
+    let total_time = start_time.elapsed().as_secs_f64();
+    let score = check_solution(&solution, &data, &distance_matrix);
+    return Metrics {
+        name: name.to_string(),
+        scores: vec![score],
+        times: vec![total_time],
+        best_solution: solution,
+    };
 }
 
 #[pymodule]
@@ -203,6 +225,8 @@ fn evolutionary(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(complexity, m)?)?;
     m.add_function(wrap_pyfunction!(solution_history, m)?)?;
     m.add_function(wrap_pyfunction!(benchmark_candidates, m)?)?;
+    m.add_function(wrap_pyfunction!(run, m)?)?;
+    m.add_function(wrap_pyfunction!(multi_local_search::assignment_6, m)?)?;
     m.add_class::<Metrics>()?;
     Ok(())
 }
