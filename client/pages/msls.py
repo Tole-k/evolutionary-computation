@@ -51,12 +51,11 @@ fn mix_solution(solution)
     return new_solution
 
 fn ils(solution, max_time)
-    best_solution = []
+    best_solution = generate_random_solution()
     best_score = INFINITY
     start_time = current_time()
     while start_time.elapsed() < max_time
-        let starting_solution = generate_random_solution()
-        let solution = local_search(starting_solution)
+        let solution = local_search(mix_solution(best_solution))
         let score = check_solution(solution)
         if score < best_score
             best_score = score
@@ -66,7 +65,9 @@ fn ils(solution, max_time)
 """
 
 CONCLUSIONS = r"""
-- 
+- Multiple start local search is easier to implement and can be easily parallelized.
+- Iterative local search gives the best results so far, beating local search with greedy start.
+- It's harder to parallelize ILS.
 """
 
 ALGORITHMS = [
@@ -119,7 +120,7 @@ if __name__ == "__main__":
     import evolutionary
 
     counts_a, ils_scores_a, ils_path_a, msls_scores_a, msls_path_a = evolutionary.assignment_6("TSPA", 13, 5)
-    counts_b, ils_scores_b, ils_path_b, msls_scores_b, msls_path_b = evolutionary.assignment_6("TSPA", 13, 5)
+    counts_b, ils_scores_b, ils_path_b, msls_scores_b, msls_path_b = evolutionary.assignment_6("TSPB", 13, 5)
     for name, code, path_a, path_b in [("Ils", ILS, ils_path_a, ils_path_b), ("MSLS", MSLS, msls_path_a, msls_path_b)]:
         st.header(name)
         st.subheader("Pseudocode")
@@ -144,8 +145,6 @@ if __name__ == "__main__":
     st.header("TSP A")
     st.subheader("Scores")
     st.dataframe(df_a)
-    st.subheader("Times")
-    st.dataframe(df_a[["min time [s]", "mean time [s]", "max time [s]", "total time [s]"]])
 
     df_b = pd.DataFrame(
         {
