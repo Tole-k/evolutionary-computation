@@ -183,6 +183,7 @@ pub fn benchmark_function_mc(
 pub fn run_benchmark_suite(
     functions: Vec<fn(&Vec<DataPoint>, usize, &Array2<f64>) -> Vec<usize>>,
     names: Vec<&str>,
+    dataset:&str,
     data: &Vec<DataPoint>,
     distance_matrix: &Array2<f64>,
     mc: bool,
@@ -201,15 +202,16 @@ pub fn run_benchmark_suite(
             results.push(benchmark_function(*function, data, distance_matrix, name));
         }
     }
-    let mut old_json: HashMap<String, Metrics> = match fs::read_to_string("result.json") {
+    let mut existing_json: HashMap<String, HashMap<String, Metrics>> = match fs::read_to_string("result.json") {
         Ok(data) => serde_json::from_str(&data).unwrap_or_default(),
         Err(_) => HashMap::new(),
     };
-    let new_json: HashMap<String, &Metrics> = results.iter().map(|m| (m.name.clone(), m)).collect();
-    for (k, v) in new_json {
-        old_json.insert(k, v.clone());
+    
+    for metrics in &results{
+        existing_json.entry(dataset.to_string()).or_insert(HashMap::new()).insert(metrics.name.clone(), metrics.clone());
     }
-    let map_as_json = serde_json::to_string_pretty(&old_json).unwrap();
+    
+    let map_as_json = serde_json::to_string_pretty(&existing_json).unwrap();
     let mut file = File::create("result.json").expect("Could not create file!");
 
     file.write_all(map_as_json.as_bytes())

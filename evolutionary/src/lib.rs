@@ -112,23 +112,23 @@ fn map_full()
 }
 
 #[pyfunction]
-fn main(dataset: &str, names: Vec<String>) -> Vec<utils::Metrics> {
-    let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset}.csv"));
+fn main(dataset_name: &str, names: Vec<String>) -> Vec<utils::Metrics> {
+    let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset_name}.csv"));
     let distance_matrix = utils::calculate_distance_matrix(&data);
     let names: Vec<&str> = names.iter().map(|s| &**s).collect();
     let map = get_map();
     let algorithms = Vec::from_iter(names.iter().map(|s| map[s]));
-    utils::run_benchmark_suite(algorithms, names, &data, &distance_matrix, false)
+    utils::run_benchmark_suite(algorithms, names, dataset_name, &data, &distance_matrix, false)
 }
 
 #[pyfunction]
-fn main_mc(dataset: &str, names: Vec<String>) -> Vec<utils::Metrics> {
-    let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset}.csv"));
+fn main_mc(dataset_name: &str, names: Vec<String>) -> Vec<utils::Metrics> {
+    let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset_name}.csv"));
     let distance_matrix = utils::calculate_distance_matrix(&data);
     let names: Vec<&str> = names.iter().map(|s| &**s).collect();
     let map = get_map();
     let algorithms = Vec::from_iter(names.iter().map(|s| map[s]));
-    utils::run_benchmark_suite(algorithms, names, &data, &distance_matrix, true)
+    utils::run_benchmark_suite(algorithms, names, dataset_name, &data, &distance_matrix, true)
 }
 
 #[pyfunction]
