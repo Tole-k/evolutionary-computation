@@ -44,7 +44,7 @@ pub fn large_neighborhood_search_w_ls(
     starting_point_index: usize,
     distance_matrix: &Array2<f64>,
 ) -> Vec<usize> {
-    large_neighborhood_search(data, starting_point_index, distance_matrix, true, 0.3).0
+    large_neighborhood_search(data, starting_point_index, distance_matrix, true, 0.3, 6.156).0
 }
 
 pub fn large_neighborhood_search_wo_ls(
@@ -52,7 +52,7 @@ pub fn large_neighborhood_search_wo_ls(
     starting_point_index: usize,
     distance_matrix: &Array2<f64>,
 ) -> Vec<usize> {
-    large_neighborhood_search(data, starting_point_index, distance_matrix, false, 0.3).0
+    large_neighborhood_search(data, starting_point_index, distance_matrix, false, 0.3, 6.156).0
 }
 
 pub fn large_neighborhood_search(
@@ -61,12 +61,12 @@ pub fn large_neighborhood_search(
     distance_matrix: &Array2<f64>,
     apply_local_search: bool,
     removal_rate: f32,
+    max_time: f64,
 ) -> (Vec<usize>, usize) {
     let mut best_solution: Vec<usize> =
         generate_random_solution(data, starting_point_index, distance_matrix);
     let mut best_score: f64 = f64::INFINITY;
     let mut count: usize = 0;
-    let max_time = 6.156;
     let start_time = Instant::now();
     while start_time.elapsed().as_secs_f64() < max_time {
         let mut solution = destroy(
@@ -94,6 +94,7 @@ pub fn assignment_7(
 ) -> (Vec<usize>, Vec<f64>, Vec<usize>,Vec<usize>, Vec<f64>, Vec<usize>) {
     let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset}.csv"));
     let distance_matrix = utils::calculate_distance_matrix(&data);
+    let max_time = 1.156;
     let mut scores: Vec<f64> = vec![];
     let mut counts: Vec<usize> = vec![];
     let mut best_solution: Vec<usize> = vec![];
@@ -103,13 +104,14 @@ pub fn assignment_7(
     let mut counts_ls: Vec<usize> = vec![];
     let mut best_solution_ls: Vec<usize> = vec![];
     let mut best_score_ls = f64::INFINITY;
-    for _ in 0..20 {
+    for _ in 0..5 {
         let (solution, count) = large_neighborhood_search(
             &data,
             42,
             &distance_matrix,
             false,
             removal_rate,
+            max_time,
         );
         let score = check_solution(&solution, &data, &distance_matrix);
         counts.push(count);
@@ -122,8 +124,9 @@ pub fn assignment_7(
             &data,
             42,
             &distance_matrix,
-            true,
+            false,
             removal_rate,
+            max_time,
         );
         let score = check_solution(&solution, &data, &distance_matrix);
         counts_ls.push(count);
