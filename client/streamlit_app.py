@@ -65,6 +65,7 @@ pages = [
     st.Page(os.path.join("pages", "regret.py"), title="2. Regret"),
     st.Page(os.path.join("pages", "local.py"), title="3. Local Search"),
     st.Page(os.path.join("pages", "candidates.py"), title="4. Local Search - Candidates"),
+    st.Page(os.path.join("pages", "cached_deltas.py"), title="5. Cached Deltas"),
     st.Page(os.path.join("pages", "msls.py"), title="6. Multiple Start Local Search"),
     st.Page(os.path.join("pages", "test.py"), title="Test Display"),
 ]

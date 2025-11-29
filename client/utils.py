@@ -74,16 +74,15 @@ def load_TSP_data(tsp_to_load: Literal["TSP A", "TSP B"]):
 
 
 def load_algorithm_results(algorithms: list[Algorithm], tsp_version: str):
-    # TODO: Fix the function to differentiate between different tsp versions
-    # try:
-    #     with open('result.json', 'r', encoding="UTF-8") as file:
-    #         data = json.load(file)
-    #         solution_data = [evolutionary.Metrics(**data[alg.work_name]) for alg in algorithms]
-    #         print("loading results")
+    try:
+        with open('result.json', 'r', encoding="UTF-8") as file:
+            data = json.load(file)
+            solution_data = [evolutionary.Metrics(**data[tsp_version][alg.work_name]) for alg in algorithms]
+            print("loading results")
 
-    # except (FileNotFoundError, KeyError):
-    solution_data = evolutionary.main_mc(
-        tsp_version, [alg.work_name for alg in algorithms]
-    )
-    print("saved results not found calculating new ones")
+    except (FileNotFoundError, KeyError):
+        solution_data = evolutionary.main_mc(
+            tsp_version, [alg.work_name for alg in algorithms]
+        )
+        print("saved results not found calculating new ones")
     return solution_data

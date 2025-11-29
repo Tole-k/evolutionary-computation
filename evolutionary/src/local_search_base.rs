@@ -75,7 +75,7 @@ pub fn inter(
         + data[j].cost as f64;
 }
 
-fn generate_neighborhood(
+pub fn generate_neighborhood(
     current_solution: &Vec<usize>,
     _data: &Vec<DataPoint>,
 ) -> Vec<(usize, usize, usize)> {
@@ -102,7 +102,7 @@ fn generate_neighborhood(
     solutions
 }
 
-fn search_neighborhood(
+pub fn search_neighborhood(
     current_solution: &Vec<usize>,
     data: &Vec<DataPoint>,
     distance_matrix: &Array2<f64>,
