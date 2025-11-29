@@ -1,4 +1,5 @@
 mod greedy_algorithms;
+mod large_neighborhood_search;
 mod local_search;
 mod local_search_base;
 mod local_search_candidates;
@@ -95,9 +96,17 @@ fn get_map() -> HashMap<&'static str, fn(&Vec<utils::DataPoint>, usize, &Array2<
         (
             "ls_cached_deltas_nodes",
             cached_deltas::ls_cached_deltas_nodes,
-        )
+        ),
         ("msls", multi_local_search::msls),
         ("ils", multi_local_search::ils),
+        (
+            "large_neighborhood_search_w_ls",
+            large_neighborhood_search::large_neighborhood_search_w_ls,
+        ),
+        (
+            "large_neighborhood_search_wo_ls",
+            large_neighborhood_search::large_neighborhood_search_wo_ls,
+        ),
     ])
 }
 
@@ -245,6 +254,10 @@ fn evolutionary(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(benchmark_candidates, m)?)?;
     m.add_function(wrap_pyfunction!(run, m)?)?;
     m.add_function(wrap_pyfunction!(multi_local_search::assignment_6, m)?)?;
+    m.add_function(wrap_pyfunction!(
+        large_neighborhood_search::assignment_7,
+        m
+    )?)?;
     m.add_class::<Metrics>()?;
     Ok(())
 }
