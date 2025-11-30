@@ -14,7 +14,7 @@ fn roulette_wheel_destroy(solution)
     n = solution.len()
     to_remove = ceil(n*0.4)
     for _ from 0 to to_remove
-        random = random(0,solution..total_node_cost())
+        random = random(0,solution.total_node_cost())
         accumulated = 0
         i=0
         while true
@@ -26,7 +26,7 @@ fn roulette_wheel_destroy(solution)
     return solution
 
 fn repair(solution)
-    return nn_2_any_weighted_regret(solution)
+    return nn_2_any_weighted_regret(solution, weights=[0.5,0.5])
 
 fn lns(solution, max_time)
     best_solution = generate_random_solution()
@@ -34,7 +34,7 @@ fn lns(solution, max_time)
     best_score = INFINITY
     start_time = current_time()
     while start_time.elapsed() < max_time
-        solution = roulette_wheel_destroy(best_solution, weights=[0.5,0.5])
+        solution = roulette_wheel_destroy(best_solution)
         solution = repair(solution)
         score = check_solution(solution)
         if score < best_score
@@ -48,9 +48,9 @@ LNS_LS = r"""
 ```py
 fn roulette_wheel_destroy(solution)
     n = solution.len()
-    to_remove = ceil(n*0.3)
+    to_remove = ceil(n*0.4)
     for _ from 0 to to_remove
-        random = random(0,solution..total_node_cost())
+        random = random(0,solution.total_node_cost())
         accumulated = 0
         i=0
         while true
