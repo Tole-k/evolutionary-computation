@@ -22,7 +22,7 @@ impl RouletteWheel {
     pub fn total_weight(&self) -> f32 {
         self.items.iter().map(|a| a.1).sum()
     }
-    pub fn sample(&mut self) -> (usize, f32) {
+    pub fn draw(&mut self) -> (usize, f32) {
         let mut rng = rand::rng();
         let random = rng.random_range(0.0..self.total_weight());
         let mut accumulate = 0.0;
@@ -37,10 +37,10 @@ impl RouletteWheel {
         }
         self.items.remove(i)
     }
-    pub fn sample_n(&mut self, n: usize) -> Vec<(usize, f32)> {
+    pub fn draw_n(&mut self, n: usize) -> Vec<(usize, f32)> {
         let mut sampled: Vec<(usize, f32)> = vec![];
         for _ in 0..n {
-            sampled.push(self.sample());
+            sampled.push(self.draw());
         }
         sampled
     }
@@ -48,21 +48,22 @@ impl RouletteWheel {
 
 fn destroy(data: &Vec<DataPoint>, solution: Vec<usize>, removal_rate: f32) -> Vec<usize> {
     let n = solution.len();
-    let mut new_solution = solution.clone();
     let to_remove = (removal_rate * n as f32).ceil() as usize;
     let mut node_vec: Vec<(usize, i32)> = vec![];
-    for (i, &node_id) in solution.iter().enumerate() {
+    for &node_id in solution.iter() {
         let node = data[node_id];
-        node_vec.push((node.id, node.cost));
+        node_vec.push((node_id, node.cost));
     }
     let mut roulette_wheel = RouletteWheel {
         items: node_vec.clone().iter().map(|a| (a.0, a.1 as f32)).collect(),
     };
-    for _ in 0..to_remove {
-        let (i, _) = roulette_wheel.sample();
-        new_solution.remove(new_solution.iter().position(|&x| x == i).unwrap());
-    }
-    // new_solution = roulette_wheel.items.iter().map(|a| a.0).collect();
+    // let mut new_solution = solution.clone();
+    // for _ in 0..to_remove {
+    //     let (i, _) = roulette_wheel.draw();
+    //     new_solution.remove(new_solution.iter().position(|&x| x == i).unwrap());
+    // }
+    roulette_wheel.draw_n(to_remove);
+    let new_solution = roulette_wheel.items.iter().map(|a| a.0).collect();
     return new_solution;
 }
 
@@ -79,7 +80,7 @@ fn regret_from_partial_solution(
         let index = not_visited_points.iter().position(|n| n.id == id).unwrap();
         not_visited_points.remove(index);
     }
-    for _ in 1..(data.len() + 1) / 2 {
+    while tsp_path.len() < (data.len() + 1) / 2 {
         let mut insert_spot: usize = 0;
         let mut best_point_id = initial_solution[0];
         let mut min_cost = f64::INFINITY;
