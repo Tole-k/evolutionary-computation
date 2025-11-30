@@ -31,9 +31,8 @@ impl RouletteWheel {
             accumulate += self.items[i].1;
             if accumulate > random {
                 break;
-            } else {
-                i += 1;
             }
+            i += 1;
         }
         self.items.remove(i)
     }

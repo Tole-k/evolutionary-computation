@@ -1,6 +1,6 @@
 import json
 from statistics import mean
-from utils import Algorithm
+from utils import Algorithm, load_algorithm_results
 import pandas as pd
 import numpy as np
 import streamlit as st
@@ -8,18 +8,92 @@ import streamlit as st
 from components.tsp_plot import TSPPlotter
 from problem import main
 
-
 LNS = r"""
+```py
+fn roulette_wheel_destroy(solution)
+    n = solution.len()
+    to_remove = ceil(n*0.4)
+    for _ from 0 to to_remove
+        random = random(0,solution..total_node_cost())
+        accumulated = 0
+        i=0
+        while true
+            accumulated += cost_of_node(solution[i])
+            if accumulated > random
+                break
+            i += 1
+        solution.remove(i)
+    return solution
+
+fn repair(solution)
+    return nn_2_any_weighted_regret(solution)
+
+fn lns(solution, max_time)
+    best_solution = generate_random_solution()
+    best_solution = local_search(best_solution)
+    best_score = INFINITY
+    start_time = current_time()
+    while start_time.elapsed() < max_time
+        solution = roulette_wheel_destroy(best_solution, weights=[0.5,0.5])
+        solution = repair(solution)
+        score = check_solution(solution)
+        if score < best_score
+            best_score = score
+            best_solution = solution
+    return best_solution
+```
+"""
+
+LNS_LS = r"""
+```py
+fn roulette_wheel_destroy(solution)
+    n = solution.len()
+    to_remove = ceil(n*0.3)
+    for _ from 0 to to_remove
+        random = random(0,solution..total_node_cost())
+        accumulated = 0
+        i=0
+        while true
+            accumulated += cost_of_node(solution[i])
+            if accumulated > random
+                break
+            i += 1
+        solution.remove(i)
+    return solution
+
+fn repair(solution)
+    return nn_2_any_weighted_regret(solution, weights=[0.5,0.5])
+
+fn lns(solution, max_time)
+    best_solution = generate_random_solution()
+    best_solution = local_search(best_solution)
+    best_score = INFINITY
+    start_time = current_time()
+    while start_time.elapsed() < max_time
+        solution = roulette_wheel_destroy(best_solution)
+        solution = repair(solution)
+        solution = local_search(solution)
+        score = check_solution(solution)
+        if score < best_score
+            best_score = score
+            best_solution = solution
+    return best_solution
+```
 """
 
 CONCLUSIONS = r"""
+ - Tested 20%, 30%, and 40% removal rates, with 40% yielding marginally better results.
+ - Both methods come really close to the ILS in terms of average solution quality.
+ - LNS with local search on average gets slightly better than LNS without local search.
+ - LNS without local search is significantly faster (has higher counts per run) and its running time is pretty much constant
+ - LNS with local search run times are more varied due to local search component.
 """
 
 ALGORITHMS = [
     Algorithm(
         "Large Neighborhood Search with Local Search",
         "large_neighborhood_search_w_ls",
-        LNS,
+        LNS_LS,
     ),
     Algorithm(
         "Large Neighborhood Search without Local Search",
@@ -73,14 +147,14 @@ if __name__ == "__main__":
                 print("loading results")
 
         except (FileNotFoundError, KeyError):
-            lns, lns_w_ls = evolutionary.assignment_7(ds, 0.3)
+            lns, lns_w_ls = evolutionary.assignment_7(ds, 0.4)
             _, (counts, scores, path) = lns
             _, (counts_ls, scores_ls, path_ls) = lns_w_ls
             print("saved results not found calculating new ones")
         
         for name, code, path in [
             ("Large Neighborhood Search without Local Search", LNS, path),
-            ("Large Neighborhood Search with Local Search", LNS, path_ls),
+            ("Large Neighborhood Search with Local Search", LNS_LS, path_ls),
         ]:
             st.header(name)
             st.subheader("Pseudocode")
@@ -103,3 +177,13 @@ if __name__ == "__main__":
     st.divider()
     st.subheader("Conclusions")
     st.markdown(CONCLUSIONS)
+    
+    st.subheader("Comparisons")
+    from pages.regret import ALGORITHMS as REGRET_ALGORITHMS
+    from pages.local import ALGORITHMS as LOCAL_ALGORITHMS
+    for ds in ["TSPA", "TSPB"]:
+        st.subheader(ds)
+        solution_data = load_algorithm_results([LOCAL_ALGORITHMS[5],REGRET_ALGORITHMS[1]], ds)
+        st.dataframe(to_dataframe(solution_data))
+    st.image("msls.png")
+    
