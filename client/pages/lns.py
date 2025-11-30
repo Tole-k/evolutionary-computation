@@ -1,3 +1,4 @@
+import json
 from statistics import mean
 from utils import Algorithm
 import pandas as pd
@@ -59,47 +60,45 @@ if __name__ == "__main__":
     main(report=True)
 
     st.title("Large Neighborhood Search")
-    tsp_plotter_a = TSPPlotter("TSP A", dark_mode=False)  # type: ignore
-    tsp_plotter_b = TSPPlotter("TSP B", dark_mode=False)  # type: ignore
     import evolutionary
 
-    counts_a, scores_a, path_a, counts_a_ls,scores_a_ls, path_a_ls = evolutionary.assignment_7("TSPA", 0.3)
-    counts_b, scores_b, path_b, counts_b_ls, scores_b_ls, path_b_ls = evolutionary.assignment_7("TSPB", 0.3)
-    for name, code, path_a, path_b in [
-        ("Large Neighborhood Search with Local Search", LNS, path_a, path_b),
-        ("Large Neighborhood Search without Local Search", LNS, path_a_ls, path_b_ls),
-    ]:
-        st.header(name)
-        st.subheader("Pseudocode")
-        st.markdown(code)
-        st.subheader("TSP A")
-        fig = tsp_plotter_a.plot(path_a)
-        st.pyplot(fig)
-        st.write(f"Best found path: {path_a}")
-        st.subheader("TSP B")
-        fig = tsp_plotter_b.plot(path_b)
-        st.pyplot(fig)
-        st.write(f"Best found path: {path_b}")
+    for ds in ["TSPA", "TSPB"]:
+        tsp_plotter = TSPPlotter("TSP A" if ds=="TSPA" else "TSP B", dark_mode=False)
+        try:
+            with open('lns_result.json', 'r', encoding="UTF-8") as file:
+                data = json.load(file)
+                lns, lns_w_ls = data[ds]['LNS without LS'], data[ds]['LNS with LS']
+                counts, scores, path = lns
+                counts_ls, scores_ls, path_ls = lns_w_ls
+                print("loading results")
 
-    df_a = pd.DataFrame({
-        "name": ["LNS w/o LS Scores", "LNS with LS Scores", "LNS w/o LS Counts", "LNS with LS Counts"],
-        "min": [min(scores_a), min(scores_a_ls), min(counts_a), min(counts_a_ls)],
-        "mean": [mean(scores_a), mean(scores_a_ls), min(counts_a), mean(counts_a_ls)],
-        "max": [max(scores_a), max(scores_a_ls), min(counts_a), max(counts_a_ls)],
-    })
-    st.header("TSP A")
-    st.subheader("Scores")
-    st.dataframe(df_a)
+        except (FileNotFoundError, KeyError):
+            lns, lns_w_ls = evolutionary.assignment_7(ds, 0.3)
+            _, (counts, scores, path) = lns
+            _, (counts_ls, scores_ls, path_ls) = lns_w_ls
+            print("saved results not found calculating new ones")
+        
+        for name, code, path in [
+            ("Large Neighborhood Search without Local Search", LNS, path),
+            ("Large Neighborhood Search with Local Search", LNS, path_ls),
+        ]:
+            st.header(name)
+            st.subheader("Pseudocode")
+            st.markdown(code)
+            st.subheader(ds)
+            fig = tsp_plotter.plot(path)
+            st.pyplot(fig)
+            st.write(f"Best found path: {path}")
 
-    df_b = pd.DataFrame({
-        "name": ["LNS w/o LS Scores", "LNS with LS Scores", "LNS w/o LS Counts", "LNS with LS Counts"],
-        "min": [min(scores_b), min(scores_b_ls), min(counts_b), min(counts_b_ls)],
-        "mean": [mean(scores_b), mean(scores_b_ls), min(counts_b), mean(counts_b_ls)],
-        "max": [max(scores_b), max(scores_b_ls), min(counts_b), max(counts_b_ls)],
-    })
-    st.header("TSP B")
-    st.subheader("Scores")
-    st.dataframe(df_b)
+        df = pd.DataFrame({
+            "name": ["LNS w/o LS Scores", "LNS with LS Scores", "LNS w/o LS Counts", "LNS with LS Counts"],
+            "min": [min(scores), min(scores_ls), min(counts), min(counts_ls)],
+            "mean": [mean(scores), mean(scores_ls), min(counts), mean(counts_ls)],
+            "max": [max(scores), max(scores_ls), min(counts), max(counts_ls)],
+        })
+        st.header(ds)
+        st.subheader("Scores")
+        st.dataframe(df)
 
     st.divider()
     st.subheader("Conclusions")

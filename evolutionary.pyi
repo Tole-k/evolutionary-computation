@@ -22,6 +22,4 @@ def run(dataset: str, name: str) -> Metrics: ...
 def assignment_6(
     dataset: str, inter_mixin_size: int, intra_mixin_size: int
 ) -> (list[int], list[float], list[int], list[float], list[int]): ...  # type: ignore
-def assignment_7(
-    dataset: str, removal_rate: float
-) -> (list[int], list[float], list[int], list[float], list[int]): ...  # type: ignore
+def assignment_7(dataset: str, removal_rate: float)->list[tuple[str,tuple[list[int],list[float],list[int]]] # type: ignore
