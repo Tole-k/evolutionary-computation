@@ -187,19 +187,6 @@ fn solution_history(dataset: &str, name: &str, point: usize) -> Vec<Vec<usize>> 
 }
 
 #[pyfunction]
-fn benchmark_candidates(dataset: &str, size: usize) -> utils::Metrics {
-    let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset}.csv"));
-    let distance_matrix = utils::calculate_distance_matrix(&data);
-    utils::benchmark_function_alpha(
-        local_search_candidates::ls_candidate_faster,
-        &data,
-        &distance_matrix,
-        "local_search_candidates",
-        size,
-    )
-}
-
-#[pyfunction]
 fn run(dataset: &str, name: &str) -> utils::Metrics {
     let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset}.csv"));
     let distance_matrix = utils::calculate_distance_matrix(&data);
@@ -224,7 +211,7 @@ fn evolutionary(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(main_mc, m)?)?;
     m.add_function(wrap_pyfunction!(complexity, m)?)?;
     m.add_function(wrap_pyfunction!(solution_history, m)?)?;
-    m.add_function(wrap_pyfunction!(benchmark_candidates, m)?)?;
+    m.add_function(wrap_pyfunction!(local_search_candidates::assignment_4, m)?)?;
     m.add_function(wrap_pyfunction!(run, m)?)?;
     m.add_function(wrap_pyfunction!(multi_local_search::assignment_6, m)?)?;
     m.add_class::<Metrics>()?;

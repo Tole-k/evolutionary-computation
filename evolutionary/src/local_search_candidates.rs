@@ -1,7 +1,9 @@
 use crate::local_search_base::{inter, intra, intra_edges};
-use crate::utils::{DataPoint, generate_random_solution};
+use crate::utils::{self, DataPoint, Metrics, check_solution, generate_random_solution};
 use core::f64;
 use ndarray::{Array2, Axis};
+use pyo3::pyfunction;
+use std::time::Instant;
 
 pub fn build_candidates(
     distance_matrix: &Array2<f64>,
@@ -257,4 +259,34 @@ pub fn ls_candidate_faster(
 ) -> Vec<usize> {
     let initial_solution = generate_random_solution(data, starting_point_index, distance_matrix);
     local_search(data, initial_solution, distance_matrix, true, &candidates)
+}
+
+#[pyfunction]
+pub fn assignment_4(dataset: &str, size: usize) -> Metrics {
+    let data: Vec<DataPoint> = utils::load_data(&format!("data/{dataset}.csv"));
+    let distance_matrix = utils::calculate_distance_matrix(&data);
+    let mut scores: Vec<f64> = vec![];
+    let mut best_solution_score: f64 = f64::INFINITY;
+    let mut best_solution: Vec<usize> = vec![];
+
+    let mut times = vec![];
+    let candidates = build_candidates(&distance_matrix, &data, size);
+    for i in 0..data.len() {
+        let start_time = Instant::now();
+        let solution = ls_candidate_faster(&data, i, &distance_matrix, &candidates);
+        times.push(start_time.elapsed().as_secs_f64());
+        let solution_score = check_solution(&solution, &data, &distance_matrix);
+        scores.push(solution_score);
+        if solution_score < best_solution_score {
+            best_solution_score = solution_score;
+            best_solution = solution;
+        }
+    }
+    let name = "local_search_candidates".to_string();
+    Metrics {
+        name,
+        scores,
+        times,
+        best_solution,
+    }
 }

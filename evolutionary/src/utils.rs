@@ -1,4 +1,3 @@
-use crate::local_search_candidates::build_candidates;
 use core::f64;
 use csv::ReaderBuilder;
 use ndarray::{Array1, Array2, Axis};
@@ -121,39 +120,6 @@ pub fn benchmark_function(
     for i in 0..data.len() {
         let start_time = Instant::now();
         let solution = f(data, i, distance_matrix);
-        times.push(start_time.elapsed().as_secs_f64());
-        let solution_score = check_solution(&solution, data, distance_matrix);
-        scores.push(solution_score);
-        if solution_score < best_solution_score {
-            best_solution_score = solution_score;
-            best_solution = solution;
-        }
-    }
-    let name = name.to_string();
-    Metrics {
-        name,
-        scores,
-        times,
-        best_solution,
-    }
-}
-
-pub fn benchmark_function_alpha(
-    f: fn(&Vec<DataPoint>, usize, &Array2<f64>, &Vec<Vec<usize>>) -> Vec<usize>,
-    data: &Vec<DataPoint>,
-    distance_matrix: &Array2<f64>,
-    name: &str,
-    size: usize,
-) -> Metrics {
-    let mut scores: Vec<f64> = vec![];
-    let mut best_solution_score: f64 = f64::INFINITY;
-    let mut best_solution: Vec<usize> = vec![];
-
-    let mut times = vec![];
-    let candidates = build_candidates(distance_matrix, data, size);
-    for i in 0..data.len() {
-        let start_time = Instant::now();
-        let solution = f(data, i, distance_matrix, &candidates);
         times.push(start_time.elapsed().as_secs_f64());
         let solution_score = check_solution(&solution, data, distance_matrix);
         scores.push(solution_score);
