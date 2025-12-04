@@ -1,4 +1,5 @@
-from typing import Literal, Iterable
+from typing import Literal
+from collections.abc import Iterable
 from dataclasses import dataclass
 
 import matplotlib

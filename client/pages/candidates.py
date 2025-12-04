@@ -110,7 +110,7 @@ if __name__ == "__main__":
     def get_candidates_metrics():
         metrics = [
             (
-                evolutionary.benchmark_candidates(
+                evolutionary.assignment_4(
                     st.session_state["tsp_version"].replace(" ", ""), i
                 ),
                 print("Done"),

@@ -1,15 +1,11 @@
 from statistics import mean
-from components import algorithm_comparison_page
 from utils import Algorithm
-from pages.local import ALGORITHMS as local_algorithms
 import pandas as pd
 import numpy as np
 import streamlit as st
 
-from components.page_template import Algorithm
 from components.tsp_plot import TSPPlotter
 from problem import main
-from utils import load_algorithm_results
 
 
 MSLS = r"""
