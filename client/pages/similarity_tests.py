@@ -18,7 +18,10 @@ def generate_plot(tsp_version: str, measure: str):
     def get_data():
         return evolutionary.similarity_tests(tsp_version, measure)
 
-    data_x, data_y = list(zip(*get_data()))
+    results, correlations = get_data()
+    corr_best, corr_very_good, corr_avg = correlations
+
+    data_x, data_y = list(zip(*results))
     data_best, data_very_good, data_avg = list(zip(*data_y))
     excluded = data_best.index(-1)
     tmp_data_x = list(data_x)
@@ -30,19 +33,21 @@ def generate_plot(tsp_version: str, measure: str):
 
     with col1:
         df_best = pd.DataFrame({"Cost": tmp_data_x, "Similarity": tmp_data_best})
-        fig_best = px.scatter(df_best, x="Cost", y="Similarity", title="Similarity to best found solution")
+        fig_best = px.scatter(df_best, x="Cost", y="Similarity", title=f"Similarity to best found solution (r={corr_best:.3f})")
         fig_best.update_layout(xaxis=dict(nticks=10), yaxis=dict(nticks=10))
         st.plotly_chart(fig_best)
 
     with col2:
         df_very_good = pd.DataFrame({"Cost": data_x, "Similarity": data_very_good})
-        fig_very_good = px.scatter(df_very_good, x="Cost", y="Similarity", title="Similarity to a very good solution (ILS)")
+        fig_very_good = px.scatter(
+            df_very_good, x="Cost", y="Similarity", title=f"Similarity to a very good solution (ILS) (r={corr_very_good:.3f})"
+        )
         fig_very_good.update_layout(xaxis=dict(nticks=10), yaxis=dict(nticks=10))
         st.plotly_chart(fig_very_good)
 
     with col3:
         df_avg = pd.DataFrame({"Cost": data_x, "Similarity": data_avg})
-        fig_avg = px.scatter(df_avg, x="Cost", y="Similarity", title="Avg similarity to other found solutions")
+        fig_avg = px.scatter(df_avg, x="Cost", y="Similarity", title=f"Avg similarity to other found solutions (r={corr_avg:.3f})")
         fig_avg.update_layout(xaxis=dict(nticks=10), yaxis=dict(nticks=10))
         st.plotly_chart(fig_avg)
 
