@@ -6,6 +6,58 @@ import plotly.express as px
 import pandas as pd
 
 PSEUDOCODE = r"""
+```py
+    fn node_similarity(solution_a, solution_b):
+        set_a = into_set(solution_a)
+        set_b = into_set(solution_b)
+        intersection = set_a intersect set_b
+        return SIZE(intersection)
+    
+    fn edge_similarity(solution_a, solution_b):
+        set_a = into_set(solution_a.edges)
+        set_b = into_set(solution_b.edges)
+        intersection = set_a intersect set_b
+        return SIZE(intersection)
+    
+    fn similarity_tests(similarity_measure):
+        solutions = []
+        for i from 0 to 1000:
+            solution = GENERATE_RANDOM_SOLUTION()
+            solution = GREEDY_EDGES_LOCAL_SEARCH(solution)
+            solutions.append(solution)
+        
+        very_good_solution = ILS()
+        best_solution = MIN_SCORE(solutions)
+        
+        best_similarities = []
+        very_good_similarities = []
+        avg_similarities = []
+        
+        for solution in solutions:
+            best_similarity = similarity_measure(solution, best_solution)
+            very_good_similarity = similarity_measure(solution, very_good_solution)
+            avg_similarity = AVERAGE([similarity_measure(solution, other) for other in solutions if other != solution])
+            
+            if best_solution != solution:
+                best_similarities.append(best_similarity)
+            very_good_similarities.append(very_good_similarity)
+            avg_similarities.append(avg_similarity)
+        
+        scores = solutions.scores
+        
+        corr_best = PEARSON(best_similarities, scores.remove(best_solution.score))
+        corr_very_good = PEARSON(very_good_similarities, scores)
+        corr_avg = PEARSON(avg_similarities, scores)
+        
+    fn PEARSON(x,y):
+        n = LENGTH(x)
+        sum_x2 = SUM([i*i for i in x])
+        sum_y2 = SUM([j*j for j in y])
+        sum_xy = SUM([i*j for i,j in ZIP(x,y)])
+        
+        return (n * sum_xy - SUM(x) * SUM(y)) / (SQRT((n * sum_x2 - SUM(x)**2)) * (SQRT(n * sum_y2 - SUM(y)**2)))
+
+```
 """
 
 CONCLUSIONS = r"""
@@ -14,6 +66,7 @@ CONCLUSIONS = r"""
     - This suggests that the bests solutions are similar to each other.
     - Avg similarity to other solutions generally shows the highest correlation.
     - Similarity to the best found solution usually shows the lowest correlation, but still significant.
+    - Neither of problem instances nor similarity measures show significantly higher correlation.
     
 """
 
@@ -61,6 +114,7 @@ def generate_plot(tsp_version: str, measure: str):
 def report():
     main(report=True)
     st.markdown(PSEUDOCODE)
+    st.image("pearson.png", width=600)
     for state in ["TSPA", "TSPB"]:
         st.header(f"Results for {state.replace('A', ' A').replace('B', ' B')}")
         for measure in ["node", "edge"]:
