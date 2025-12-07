@@ -71,7 +71,7 @@ def page():
 
 
 if __name__ == "__main__":
-    st.title("Multiple Start Local Search")
+    st.title("Similarity Tests")
     st.set_page_config(layout="wide")
     if st.session_state.get("report_mode"):
         report()
