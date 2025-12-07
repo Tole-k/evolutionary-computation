@@ -9,6 +9,12 @@ PSEUDOCODE = r"""
 """
 
 CONCLUSIONS = r"""
+    - Solution fitness and its similarity (in all three kinds) is strongly correlated in almost all cases.
+    - The better the solution (the lower its score), the higher its similarity.
+    - This suggests that the bests solutions are similar to each other.
+    - Avg similarity to other solutions generally shows the highest correlation.
+    - Similarity to the best found solution usually shows the lowest correlation, but still significant.
+    
 """
 
 
@@ -54,6 +60,7 @@ def generate_plot(tsp_version: str, measure: str):
 
 def report():
     main(report=True)
+    st.markdown(PSEUDOCODE)
     for state in ["TSPA", "TSPB"]:
         st.header(f"Results for {state.replace('A', ' A').replace('B', ' B')}")
         for measure in ["node", "edge"]:
@@ -62,6 +69,7 @@ def report():
 
 
 def page():
+    st.markdown(PSEUDOCODE)
     state = st.session_state.get("tsp_version")
     if state not in ["TSP A", "TSP B"]:
         raise ValueError(f"Impossible TSP state reached: {state}")
@@ -77,3 +85,5 @@ if __name__ == "__main__":
         report()
     else:
         page()
+    st.subheader("Conclusions")
+    st.markdown(CONCLUSIONS)
