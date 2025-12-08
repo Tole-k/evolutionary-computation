@@ -190,7 +190,6 @@ fn solution_history(dataset: &str, name: &str, point: usize) -> Vec<Vec<usize>> 
 fn run(dataset: &str, name: &str) -> utils::Metrics {
     let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset}.csv"));
     let distance_matrix = utils::calculate_distance_matrix(&data);
-    // let names: Vec<&str> = names.iter().map(|s| &**s).collect();
     let map = get_map();
     let algorithms = map[name];
     let start_time = Instant::now();
