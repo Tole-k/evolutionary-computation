@@ -6,6 +6,9 @@
         "figsize",
         "frameon",
         "maturin",
+        "msls",
+        "ndarray",
+        "nums",
         "pyproject",
         "streamlit",
         "TSPA",
@@ -13,5 +16,6 @@
         "venv",
         "xticks",
         "yticks"
-    ]
+    ],
+    "python-envs.pythonProjects": []
 }

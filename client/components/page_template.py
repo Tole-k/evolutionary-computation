@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 
 from utils import Algorithm, load_algorithm_results
-from components.simple_plots import comparison_plots, plot_complexity
+from components.simple_plots import comparison_plots
 from components.algorithm_explanation import algorithms_tabs
 from components.report_template import report
 
@@ -30,7 +30,10 @@ def load_solution(
 
     df = pd.DataFrame({solution.name: solution.scores for solution in solution_data})
 
-    times = {solution.name: solution.total_time for solution in solution_data}
+    times = {
+        solution.name: sum(solution.times) / len(solution.times)
+        for solution in solution_data
+    }
     best_solutions = {
         solution.name: solution.best_solution for solution in solution_data
     }
@@ -39,7 +42,10 @@ def load_solution(
 
 
 def algorithm_comparison_page(
-    algorithms: list[Algorithm], name: str, additional_algorithms: list[Algorithm] | None = None, conclusions: str | None = None
+    algorithms: list[Algorithm],
+    name: str,
+    additional_algorithms: list[Algorithm] | None = None,
+    conclusions: str | None = None,
 ):
     if st.session_state.get("report_mode"):
         return report(algorithms, name, additional_algorithms, conclusions)
@@ -54,7 +60,7 @@ def algorithm_comparison_page(
     if state not in ["TSP A", "TSP B"]:
         raise ValueError(f"Impossible TSP state reached: {state}")
 
-    plot_complexity(algorithms, state)
+    # plot_complexity(algorithms, state)
 
     st.divider()
     if conclusions is not None:

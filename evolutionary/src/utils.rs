@@ -3,6 +3,8 @@ use csv::ReaderBuilder;
 use ndarray::{Array1, Array2, Axis};
 use pyo3::{pyclass, pymethods};
 use rand::prelude::*;
+use rayon::iter::IntoParallelRefIterator;
+use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
@@ -27,7 +29,7 @@ pub struct Metrics {
     #[pyo3(get, set)]
     pub scores: Vec<f64>,
     #[pyo3(get, set)]
-    pub total_time: f64,
+    pub times: Vec<f64>,
     #[pyo3(get, set)]
     pub best_solution: Vec<usize>,
 }
@@ -35,11 +37,11 @@ pub struct Metrics {
 #[pymethods]
 impl Metrics {
     #[new]
-    fn new(name: String, scores: Vec<f64>, total_time: f64, best_solution: Vec<usize>) -> Self {
+    fn new(name: String, scores: Vec<f64>, times: Vec<f64>, best_solution: Vec<usize>) -> Self {
         Self {
             name,
             scores,
-            total_time,
+            times,
             best_solution,
         }
     }
@@ -114,11 +116,11 @@ pub fn benchmark_function(
     let mut best_solution_score: f64 = f64::INFINITY;
     let mut best_solution: Vec<usize> = vec![];
 
-    let mut total_time = 0.0;
+    let mut times = vec![];
     for i in 0..data.len() {
         let start_time = Instant::now();
         let solution = f(data, i, distance_matrix);
-        total_time += start_time.elapsed().as_secs_f64();
+        times.push(start_time.elapsed().as_secs_f64());
         let solution_score = check_solution(&solution, data, distance_matrix);
         scores.push(solution_score);
         if solution_score < best_solution_score {
@@ -130,7 +132,50 @@ pub fn benchmark_function(
     Metrics {
         name,
         scores,
-        total_time,
+        times,
+        best_solution,
+    }
+}
+
+pub fn benchmark_function_mc(
+    f: fn(&Vec<DataPoint>, usize, &Array2<f64>) -> Vec<usize>,
+    data: &Vec<DataPoint>,
+    distance_matrix: &Array2<f64>,
+    name: &str,
+) -> Metrics {
+    let mut scores: Vec<f64> = vec![];
+    let mut times: Vec<f64> = vec![];
+    let mut best_solution_score: f64 = f64::INFINITY;
+    let mut best_solution: Vec<usize> = vec![];
+
+    let results: Vec<(f64, f64, Vec<usize>)> = (0..data.len())
+        .collect::<Vec<usize>>()
+        .par_iter()
+        .with_min_len(25)
+        .map(|&i| {
+            let start_time = Instant::now();
+            let solution = f(data, i, distance_matrix);
+            (
+                check_solution(&solution, data, distance_matrix),
+                start_time.elapsed().as_secs_f64(),
+                solution,
+            )
+        })
+        .collect();
+
+    for (score, time, solution) in results {
+        scores.push(score);
+        times.push(time);
+        if score < best_solution_score {
+            best_solution_score = score;
+            best_solution = solution;
+        }
+    }
+    let name = name.to_string();
+    Metrics {
+        name,
+        scores,
+        times,
         best_solution,
     }
 }
@@ -140,19 +185,29 @@ pub fn run_benchmark_suite(
     names: Vec<&str>,
     data: &Vec<DataPoint>,
     distance_matrix: &Array2<f64>,
+    mc: bool,
 ) -> Vec<Metrics> {
     let mut results: Vec<Metrics> = vec![];
     for iter_tuple in functions.iter().zip(names.iter()) {
         let (function, name) = iter_tuple;
-        results.push(benchmark_function(*function, data, distance_matrix, name));
+        if mc {
+            results.push(benchmark_function_mc(
+                *function,
+                data,
+                distance_matrix,
+                name,
+            ));
+        } else {
+            results.push(benchmark_function(*function, data, distance_matrix, name));
+        }
     }
     let mut old_json: HashMap<String, Metrics> = match fs::read_to_string("result.json") {
         Ok(data) => serde_json::from_str(&data).unwrap_or_default(),
         Err(_) => HashMap::new(),
     };
     let new_json: HashMap<String, &Metrics> = results.iter().map(|m| (m.name.clone(), m)).collect();
-    for (k,v) in new_json{
-        old_json.insert(k,v.clone());
+    for (k, v) in new_json {
+        old_json.insert(k, v.clone());
     }
     let map_as_json = serde_json::to_string_pretty(&old_json).unwrap();
     let mut file = File::create("result.json").expect("Could not create file!");
@@ -163,7 +218,7 @@ pub fn run_benchmark_suite(
         results = vec![Metrics {
             name: "test".to_string(),
             scores: vec![1.1],
-            total_time: 1.1,
+            times: vec![1.1],
             best_solution: vec![1],
         }]
     }

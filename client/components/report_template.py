@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import streamlit as st
 
 from components.page_template import Algorithm
@@ -7,26 +8,42 @@ from problem import main
 from utils import load_algorithm_results
 
 
-def _table(df: pd.DataFrame, algorithms: list[Algorithm]):
-    new_df = pd.DataFrame(
+def to_dataframe(solution_data):
+    return pd.DataFrame(
         [
             [
-                df[algorithm.work_name].min(),
-                df[algorithm.work_name].mean(),
-                df[algorithm.work_name].max(),
+                np.asarray(solution.scores).min(),
+                np.asarray(solution.scores).mean(),
+                np.asarray(solution.scores).max(),
+                np.asarray(solution.times).min(),
+                np.asarray(solution.times).mean(),
+                np.asarray(solution.times).max(),
+                np.asarray(solution.times).sum(),
             ]
-            for algorithm in algorithms
+            for solution in solution_data
         ],
-        [algorithm.name for algorithm in algorithms],
-        ["min", "mean", "max"],
+        [solution.name for solution in solution_data],
+        [
+            "min score",
+            "mean score",
+            "max score",
+            "min time [s]",
+            "mean time [s]",
+            "max time [s]",
+            "total time [s]",
+        ],
     )
-    st.dataframe(new_df)
 
 
-def report(algorithms: list[Algorithm], name: str, additional_algorithms: list[Algorithm] | None = None, conclusions: str | None = None):
+def report(
+    algorithms: list[Algorithm],
+    name: str,
+    additional_algorithms: list[Algorithm] | None = None,
+    conclusions: str | None = None,
+):
     def load_solution(
         state,
-    ) -> tuple[pd.DataFrame, dict[str, float], dict[str, list[int]]]:
+    ) -> tuple[pd.DataFrame, dict[str, list[int]]]:
         """Loads solutions from the json
 
         Returns:
@@ -37,27 +54,26 @@ def report(algorithms: list[Algorithm], name: str, additional_algorithms: list[A
             raise ValueError(f"Impossible TSP state reached: {state}")
 
         solution_data = load_algorithm_results(algorithms, state.replace(" ", ""))
-        df = pd.DataFrame(
-            {solution.name: solution.scores for solution in solution_data}
-        )
+        df = to_dataframe(solution_data)
         if additional_algorithms is not None:
-            additional_solution_data = load_algorithm_results(additional_algorithms, state.replace(" ", ""))
+            additional_solution_data = load_algorithm_results(
+                additional_algorithms, state.replace(" ", "")
+            )
 
-            df = pd.concat([df, pd.DataFrame({solution.name: solution.scores for solution in additional_solution_data})])
+            df = pd.concat([df, to_dataframe(additional_solution_data)])
 
-        times = {solution.name: solution.total_time for solution in solution_data}
         best_solutions = {
             solution.name: solution.best_solution for solution in solution_data
         }
-        return df, times, best_solutions
+        return df, best_solutions
 
     main(report=True)
 
     st.title(name)
     tsp_plotter_a = TSPPlotter("TSP A", dark_mode=False)  # type: ignore
     tsp_plotter_b = TSPPlotter("TSP B", dark_mode=False)  # type: ignore
-    df_a, _, best_paths_a = load_solution("TSP A")
-    df_b, _, best_paths_b = load_solution("TSP B")
+    df_a, best_paths_a = load_solution("TSP A")
+    df_b, best_paths_b = load_solution("TSP B")
     for algorithm in algorithms:
         st.header(algorithm.name)
         st.subheader("Pseudocode")
@@ -72,10 +88,21 @@ def report(algorithms: list[Algorithm], name: str, additional_algorithms: list[A
         st.write(f"Best found path: {best_paths_b[algorithm.work_name]}")
 
     st.header("TSP A")
-    combined_algorithms = algorithms+additional_algorithms if additional_algorithms is not None else algorithms
-    _table(df_a, combined_algorithms)
+    st.subheader("Scores")
+    st.dataframe(df_a[["min score", "mean score", "max score"]])
+    st.subheader("Times")
+    st.dataframe(
+        df_a[["min time [s]", "mean time [s]", "max time [s]", "total time [s]"]]
+    )
+
     st.header("TSP B")
-    _table(df_b, combined_algorithms)
+    st.subheader("Scores")
+    st.dataframe(df_b[["min score", "mean score", "max score"]])
+    st.subheader("Times")
+    st.dataframe(
+        df_b[["min time [s]", "mean time [s]", "max time [s]", "total time [s]"]]
+    )
+
     st.divider()
     if conclusions is not None:
         st.subheader("Conclusions")
