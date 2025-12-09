@@ -7,7 +7,7 @@ struct Insertion {
     position: usize,
 }
 
-fn greedy_cycle_2_regret_pass(
+pub fn greedy_cycle_2_regret_pass(
     path: &Vec<usize>,
     candidate: &DataPoint,
     distance_matrix: &Array2<f64>,
@@ -39,7 +39,7 @@ fn greedy_cycle_2_regret_pass(
     }
     (best.position, best.cost, second_best.cost - best.cost)
 }
-fn nn_to_any_2_regret_pass(
+pub fn nn_to_any_2_regret_pass(
     path: &Vec<usize>,
     candidate: &DataPoint,
     distance_matrix: &Array2<f64>,
