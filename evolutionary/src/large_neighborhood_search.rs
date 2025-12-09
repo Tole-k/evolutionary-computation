@@ -102,7 +102,7 @@ fn regret_from_partial_solution(
     tsp_path
 }
 
-fn repair(
+pub fn repair(
     data: &Vec<DataPoint>,
     solution: Vec<usize>,
     distance_matrix: &Array2<f64>,

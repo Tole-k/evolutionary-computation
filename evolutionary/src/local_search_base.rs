@@ -53,8 +53,8 @@ pub fn intra_edges(
         a = j;
         b = i;
     }
-    return -distance_matrix[[solution[(a - 1 + n) % n], solution[a]]]
-        + distance_matrix[[solution[(a - 1 + n) % n], solution[b]]]
+    return -distance_matrix[[solution[(a + n - 1) % n], solution[a]]]
+        + distance_matrix[[solution[(a + n - 1) % n], solution[b]]]
         - distance_matrix[[solution[b], solution[(b + 1) % n]]]
         + distance_matrix[[solution[a], solution[(b + 1) % n]]];
 }
@@ -67,10 +67,10 @@ pub fn inter(
     data: &Vec<DataPoint>,
 ) -> f64 {
     let n = solution.len();
-    return -distance_matrix[[solution[(i - 1 + n) % n], solution[i]]]
+    return -distance_matrix[[solution[(i + n - 1) % n], solution[i]]]
         - distance_matrix[[solution[i], solution[(i + 1) % n]]]
         - data[solution[i]].cost as f64
-        + distance_matrix[[solution[(i - 1 + n) % n], j]]
+        + distance_matrix[[solution[(i + n - 1) % n], j]]
         + distance_matrix[[j, solution[(i + 1) % n]]]
         + data[j].cost as f64;
 }

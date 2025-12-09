@@ -9,7 +9,7 @@ mod local_search_candidates;
 mod multi_local_search;
 mod regret_heuristics;
 mod similarity_tests;
-mod utils;
+pub mod utils;
 use ndarray::Array2;
 use pyo3::prelude::*;
 use std::{collections::HashMap, time::Instant, usize};
