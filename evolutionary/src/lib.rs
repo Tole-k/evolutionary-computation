@@ -1,4 +1,5 @@
 mod greedy_algorithms;
+pub mod hybrid_evolutionary;
 mod local_search;
 mod local_search_base;
 mod local_search_candidates;
@@ -88,6 +89,7 @@ fn get_map() -> HashMap<&'static str, fn(&Vec<utils::DataPoint>, usize, &Array2<
         ),
         ("msls", multi_local_search::msls),
         ("ils", multi_local_search::ils),
+        ("hybrid_evo", hybrid_evolutionary::hybrid_algorithm),
     ])
 }
 

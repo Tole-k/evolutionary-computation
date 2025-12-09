@@ -11,6 +11,7 @@
         "nums",
         "pyproject",
         "streamlit",
+        "subpaths",
         "TSPA",
         "TSPB",
         "venv",
