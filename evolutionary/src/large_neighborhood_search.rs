@@ -56,11 +56,6 @@ fn destroy(data: &Vec<DataPoint>, solution: Vec<usize>, removal_rate: f32) -> Ve
     let mut roulette_wheel = RouletteWheel {
         items: node_vec.clone().iter().map(|a| (a.0, a.1 as f32)).collect(),
     };
-    // let mut new_solution = solution.clone();
-    // for _ in 0..to_remove {
-    //     let (i, _) = roulette_wheel.draw();
-    //     new_solution.remove(new_solution.iter().position(|&x| x == i).unwrap());
-    // }
     roulette_wheel.draw_n(to_remove);
     let new_solution = roulette_wheel.items.iter().map(|a| a.0).collect();
     return new_solution;
