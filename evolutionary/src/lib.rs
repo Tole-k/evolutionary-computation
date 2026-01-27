@@ -1,9 +1,13 @@
+mod cached_deltas;
+mod cached_deltas_base;
 mod greedy_algorithms;
+mod large_neighborhood_search;
 mod local_search;
 mod local_search_base;
 mod local_search_candidates;
 mod multi_local_search;
 mod regret_heuristics;
+mod similarity_tests;
 mod utils;
 use ndarray::Array2;
 use pyo3::prelude::*;
@@ -86,8 +90,24 @@ fn get_map() -> HashMap<&'static str, fn(&Vec<utils::DataPoint>, usize, &Array2<
             "ls_candidate_50_edge",
             local_search_candidates::ls_candidate_50_edge,
         ),
+        (
+            "ls_cached_deltas_edges",
+            cached_deltas::ls_cached_deltas_edges,
+        ),
+        (
+            "ls_cached_deltas_nodes",
+            cached_deltas::ls_cached_deltas_nodes,
+        ),
         ("msls", multi_local_search::msls),
         ("ils", multi_local_search::ils),
+        (
+            "large_neighborhood_search_w_ls",
+            large_neighborhood_search::large_neighborhood_search_w_ls,
+        ),
+        (
+            "large_neighborhood_search_wo_ls",
+            large_neighborhood_search::large_neighborhood_search_wo_ls,
+        ),
     ])
 }
 
@@ -139,27 +159,49 @@ fn map_full()
             "ls_candidate_50",
             local_search_candidates::ls_candidate_50_full,
         ),
+        (
+            "ls_cached_deltas_edges",
+            cached_deltas::ls_cached_deltas_edges_full,
+        ),
+        (
+            "ls_cached_deltas_nodes",
+            cached_deltas::ls_cached_deltas_nodes_full,
+        ),
     ])
 }
 
 #[pyfunction]
-fn main(dataset: &str, names: Vec<String>) -> Vec<utils::Metrics> {
-    let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset}.csv"));
+fn main(dataset_name: &str, names: Vec<String>) -> Vec<utils::Metrics> {
+    let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset_name}.csv"));
     let distance_matrix = utils::calculate_distance_matrix(&data);
     let names: Vec<&str> = names.iter().map(|s| &**s).collect();
     let map = get_map();
     let algorithms = Vec::from_iter(names.iter().map(|s| map[s]));
-    utils::run_benchmark_suite(algorithms, names, &data, &distance_matrix, false)
+    utils::run_benchmark_suite(
+        algorithms,
+        names,
+        dataset_name,
+        &data,
+        &distance_matrix,
+        false,
+    )
 }
 
 #[pyfunction]
-fn main_mc(dataset: &str, names: Vec<String>) -> Vec<utils::Metrics> {
-    let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset}.csv"));
+fn main_mc(dataset_name: &str, names: Vec<String>) -> Vec<utils::Metrics> {
+    let data: Vec<utils::DataPoint> = utils::load_data(&format!("data/{dataset_name}.csv"));
     let distance_matrix = utils::calculate_distance_matrix(&data);
     let names: Vec<&str> = names.iter().map(|s| &**s).collect();
     let map = get_map();
     let algorithms = Vec::from_iter(names.iter().map(|s| map[s]));
-    utils::run_benchmark_suite(algorithms, names, &data, &distance_matrix, true)
+    utils::run_benchmark_suite(
+        algorithms,
+        names,
+        dataset_name,
+        &data,
+        &distance_matrix,
+        true,
+    )
 }
 
 #[pyfunction]
@@ -213,6 +255,11 @@ fn evolutionary(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(local_search_candidates::assignment_4, m)?)?;
     m.add_function(wrap_pyfunction!(run, m)?)?;
     m.add_function(wrap_pyfunction!(multi_local_search::assignment_6, m)?)?;
+    m.add_function(wrap_pyfunction!(
+        large_neighborhood_search::assignment_7,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(similarity_tests::similarity_tests, m)?)?;
     m.add_class::<Metrics>()?;
     Ok(())
 }
